@@ -34,11 +34,13 @@ __all__ = [
 ]
 
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
-SERVER_LOCATION = getenv("SERVER_LOCATION", "UKS")
 UK_SOUTH = "UKS"
 UK_WEST = "UKW"
 
-if SERVER_LOCATION == UK_SOUTH:
+SERVER_LOCATION = getenv("SERVER_LOCATION", "UKS_00")
+server_location = SERVER_LOCATION.split("_")[0]
+
+if server_location == UK_SOUTH:
     PREFERRED_LOCATIONS = [
         "UK South",
         "UK West"
