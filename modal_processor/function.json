@@ -1,0 +1,22 @@
+{
+  "scriptFile": "__init__.py",
+  "entryPoint": "process_modals",
+  "bindings": [
+    {
+      "authLevel": "Function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "route": "modals",
+      "methods": [
+        "post"
+      ],
+      "webHookType": "simpleJson"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    }
+  ]
+}
