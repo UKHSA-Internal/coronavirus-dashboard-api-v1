@@ -80,7 +80,7 @@
             "isLowPrioritySnapshotUploader": true,
             "maximumCollectionPlanSize": 50,
             "maximumSnapshotsRequired": 3,
-            "problemCounterResetInterval": "48:00:00",
+            "problemCounterResetInterval": "12:00:00",
             "provideAnonymousTelemetry": true,
             "reconnectInterval": "00:15:00",
             "shadowCopyFolder": null,
