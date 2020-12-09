@@ -1,0 +1,22 @@
+{
+  "scriptFile": "__init__.py",
+  "entryPoint": "probe",
+  "bindings": [
+    {
+      "authLevel": "Anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "head"
+      ],
+      "route": "v1/healthcheck"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    }
+  ]
+}
