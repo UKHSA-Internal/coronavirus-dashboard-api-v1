@@ -33,6 +33,7 @@ db_client = CosmosDB(Collection.LOOKUP)
 
 
 def probe(req: HttpRequest) -> HttpResponse:
+    logging.info("Processing healthcheck request")
     try:
         result = db_client.query(QUERY, params=list()).pop()
 
