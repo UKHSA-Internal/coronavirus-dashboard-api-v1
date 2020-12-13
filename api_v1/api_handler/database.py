@@ -9,7 +9,6 @@ from hashlib import blake2b
 from json import dumps
 from os import getenv
 from urllib.parse import urlparse
-from asyncio import Lock
 from math import ceil
 
 # 3rd party:
@@ -71,24 +70,23 @@ async def process_head(filters: str, ordering: OrderingType,
     logging.info(f"DB Query: {query}")
     logging.info(f"Query arguments: {arguments}")
 
-    async with Lock():
-        items = container.query_items(
-            query=query,
-            parameters=arguments,
-            max_item_count=MAX_ITEMS_PER_RESPONSE,
-            enable_cross_partition_query=True,
-            partition_key=date
-        )
+    items = container.query_items(
+        query=query,
+        parameters=arguments,
+        max_item_count=MAX_ITEMS_PER_RESPONSE,
+        enable_cross_partition_query=True,
+        # partition_key=date
+    )
 
-        try:
-            results = list(items)
-        except KeyError:
-            raise NotAvailable()
+    try:
+        results = list(items)
+    except KeyError:
+        raise NotAvailable()
 
-        if not len(results):
-            raise NotAvailable()
+    if not len(results):
+        raise NotAvailable()
 
-        return list()
+    return list()
 
 
 async def process_get(request: HttpRequest, filters: str,
@@ -114,43 +112,43 @@ async def process_get(request: HttpRequest, filters: str,
         count_items = list(container.query_items(
             query=DBQueries.count.substitute(**subs),
             parameters=arguments,
+            max_item_count=MAX_ITEMS_PER_RESPONSE,
             enable_cross_partition_query=True,
-            partition_key=date
+            # partition_key=date
         ))
         count = count_items.pop()
     except (IndexError, ValueError):
         raise NotAvailable()
 
-    async with Lock():
-        items = container.query_items(
-            query=query,
-            parameters=arguments,
-            max_item_count=MAX_ITEMS_PER_RESPONSE,
-            enable_cross_partition_query=True,
-            partition_key=date
-        )
+    items = container.query_items(
+        query=query,
+        parameters=arguments,
+        max_item_count=MAX_ITEMS_PER_RESPONSE,
+        enable_cross_partition_query=True,
+        # partition_key=date
+    )
 
-        if tokens.page_number is not None:
-            page_number = int(tokens.page_number)
+    if tokens.page_number is not None:
+        page_number = int(tokens.page_number)
 
-        try:
-            query_hash = blake2b(query.encode(), digest_size=32).hexdigest()
-            # paginated_items = list(items.by_page(continuation_token=query_hash))
-            paginated_items = items.by_page(continuation_token=query_hash)
+    try:
+        query_hash = blake2b(query.encode(), digest_size=32).hexdigest()
+        # paginated_items = list(items.by_page(continuation_token=query_hash))
+        paginated_items = items.by_page(continuation_token=query_hash)
 
-            if page_number is not None:
-                page = 0
-                while page < page_number:
-                    # for ind, page in enumerate(paginated_items):
-                    res = next(paginated_items)
-                    page += 1
-                    # break
-                    # results = list(paginated_items[page_number - 1])
-                results = list(res)
-            else:
-                results = list(next(paginated_items))
-        except (KeyError, IndexError, StopIteration):
-            raise NotAvailable()
+        if page_number is not None:
+            page = 0
+            while page < page_number:
+                # for ind, page in enumerate(paginated_items):
+                res = next(paginated_items)
+                page += 1
+                # break
+                # results = list(paginated_items[page_number - 1])
+            results = list(res)
+        else:
+            results = list(next(paginated_items))
+    except (KeyError, IndexError, StopIteration):
+        raise NotAvailable()
 
     logging.info(f"Response length: {len(results)}")
 
@@ -210,18 +208,17 @@ async def get_latest_available(filters: str, latest_by: str,
 
     # ToDo: Return data with CSV format.
 
-    async with Lock():
-        latest = container.query_items(
-            query=query,
-            parameters=arguments,
-            max_item_count=MAX_ITEMS_PER_RESPONSE,
-            enable_cross_partition_query=True
-        )
+    latest = container.query_items(
+        query=query,
+        parameters=arguments,
+        max_item_count=MAX_ITEMS_PER_RESPONSE,
+        enable_cross_partition_query=True
+    )
 
-        try:
-            return next(latest)[DATE_PARAM_NAME]
-        except (KeyError, IndexError, StopIteration):
-            raise NotAvailable()
+    try:
+        return next(latest)[DATE_PARAM_NAME]
+    except (KeyError, IndexError, StopIteration):
+        raise NotAvailable()
 
 
 async def get_data(request: HttpRequest, tokens: QueryParser,
