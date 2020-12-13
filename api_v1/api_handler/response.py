@@ -27,7 +27,7 @@ from azure.functions import HttpResponse, HttpRequest
 
 # Internal:
 from .types import APIHandlerType, APIFunctionType
-from .constants import RESPONSE_TYPE, SELF_URL
+from .constants import RESPONSE_TYPE
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Header
@@ -135,7 +135,7 @@ def format_response(func: APIHandlerType) -> APIFunctionType:
             )
 
         return HttpResponse(
-            body=gzipped_data,
+            body=gzipped_data if code != 204 else None,
             status_code=int(code),
             headers=headers
         )
