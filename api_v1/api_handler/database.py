@@ -104,7 +104,7 @@ async def process_get(request: HttpRequest, filters: str,
 
     query = DBQueries.data_query.substitute(**subs)
 
-    logging.info(f">>>> DB Query: {query}")
+    logging.info(f"DB Query: {query}")
     logging.info(f"Query arguments: {arguments}")
     page_number = None
 
@@ -260,7 +260,6 @@ async def get_data(request: HttpRequest, tokens: QueryParser,
     if ENVIRONMENT in ["PRODUCTION", "DEVELOPMENT"]:
         date = series_date
 
-    logging.warning(date)
     max_items = MAX_ITEMS_PER_RESPONSE
 
     latest_by = await tokens.only_latest_by
