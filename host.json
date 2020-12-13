@@ -56,8 +56,8 @@
                 "minSamplingPercentage": 0.1,
                 "maxSamplingPercentage": 100.0,
                 "movingAverageRatio": 1.0,
-                "excludedTypes": "Dependency;Event;Request",
-                "includedTypes": "PageView;Trace"
+                "excludedTypes": "Dependency",
+                "includedTypes": "PageView;Trace;Event;Request"
             }
         },
         "enableLiveMetrics": true,
