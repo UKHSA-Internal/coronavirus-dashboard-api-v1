@@ -238,10 +238,6 @@ class QueryParser:
     def extract_content(self) -> Tuple[QueryArguments, str]:
         """
 
-        Parameters
-        ----------
-        content: str
-
         Raises
         ------
         ExceedsMaxParameters
@@ -351,17 +347,3 @@ class QueryParser:
             extract = args.group('argument')
 
         return extract
-
-    # async def _process(self) -> Tuple[QueryArguments, str]:
-    #     """
-    #
-    #     Returns
-    #     -------
-    #     Tuple[QueryArguments, str]
-    #     """
-    #     extract = str()
-    #     args = self.pattern.match(self._query)
-    #     if args is not None:
-    #         extract = args.group('argument')
-    #
-    #     return await self.extract_content(extract)
