@@ -162,14 +162,25 @@ async def get_assurance_query(struct: str) -> str:
         "areacode",
         "date",
         "areatype",
-        "releasetimestamp "
+        "releasetimestamp",
+        "hash",
+        "areaNameLower",
     }
 
-    query = [
-        f'IS_DEFINED(c.{match.group("db_name")}) '
-        for match in pattern.finditer(struct)
-        if match.group("db_name").lower() not in excluded
-    ]
+    query = list()
+
+    for match in pattern.finditer(struct):
+        metric = match.group("db_name")
+
+        if metric.lower() in excluded:
+            continue
+
+        if DATA_TYPES[metric] is not list:
+            query.append(f'IS_DEFINED(c.{metric}) ')
+            continue
+
+        if DATA_TYPES[metric] is list:
+            query.append(f'ARRAY_LENGTH(c.{metric}) > 0 ')
 
     query_str = str.join("OR ", query)
     return f" AND ({query_str})" if query_str else str()
