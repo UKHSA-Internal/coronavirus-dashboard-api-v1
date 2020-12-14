@@ -58,18 +58,47 @@ db = client.get_database_client(DatabaseCredentials.db_name)
 container = db.get_container_client(DatabaseCredentials.data_collection)
 
 
+def log_response(query, arguments):
+    """
+    Closure for logging DB query information.
+
+    Main function receives the ``query`` and its ``arguments`` and returns
+    a function that may be passed to the ``cosmos_client.query_items``
+    as the ``response_hook`` keyword argument.
+    """
+    count = 0
+
+    def process(metadata, results):
+        nonlocal count
+
+        custom_dims = dict(
+            response_count=metadata.get('x-ms-item-count', None),
+            chrage=metadata.get('x-ms-request-charge', None),
+            path=metadata.get('x-ms-alt-content-path', None),
+            parameters=dumps(arguments, separators=(",", ":")),
+            request_round=count
+        )
+
+        logging.warning(custom_dims)
+        logging.info(query, extra={"custom_dimensions": custom_dims})
+
+    return process
+
+
 @lru_cache(maxsize=2048)
 def get_count(query, date, **kwargs):
     """
     Count is a very expensive DB call, and is therefore cached in the memory.
     """
+    response_logger = log_response(query, kwargs)
     try:
         count_items = list(container.query_items(
             query=query,
             parameters=[{"name": name, "value": value} for name, value in kwargs.items()],
             max_item_count=MAX_ITEMS_PER_RESPONSE,
             enable_cross_partition_query=True,
-            partition_key=date
+            partition_key=date,
+            response_hook=response_logger
         ))
         count = count_items.pop()
     except (IndexError, ValueError):
@@ -88,15 +117,14 @@ async def process_head(filters: str, ordering: OrderingType,
         ordering=await ordering_script
     )
 
-    logging.info(f"DB Query: {query}")
-    logging.info(f"Query arguments: {arguments}")
-
+    response_logger = log_response(query, arguments)
     items = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         enable_cross_partition_query=True,
-        partition_key=date
+        partition_key=date,
+        response_hook=response_logger
     )
 
     try:
@@ -125,8 +153,6 @@ async def process_get(request: HttpRequest, filters: str,
 
     query = DBQueries.data_query.substitute(**subs)
 
-    logging.info(f"DB Query: {query}")
-    logging.info(f"Query arguments: {arguments}")
     page_number = None
 
     count_query = DBQueries.count.substitute(**subs)
@@ -136,12 +162,14 @@ async def process_get(request: HttpRequest, filters: str,
     }
     count = get_count(count_query, date, **arguments_dict)
 
+    response_logger = log_response(query, arguments)
     items = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         enable_cross_partition_query=True,
-        partition_key=date
+        partition_key=date,
+        response_hook=response_logger
     )
 
     if tokens.page_number is not None:
@@ -165,8 +193,6 @@ async def process_get(request: HttpRequest, filters: str,
             results = list(next(paginated_items))
     except (KeyError, IndexError, StopIteration):
         raise NotAvailable()
-
-    logging.info(f"Response length: {len(results)}")
 
     if formatter != 'csv':
         response = {
@@ -219,16 +245,15 @@ async def get_latest_available(filters: str, latest_by: str,
         ordering=await ordering_script
     )
 
-    logging.info(f"Latest query: {query}")
-    logging.info(f"Parameters: {arguments}")
-
     # ToDo: Return data with CSV format.
 
+    response_logger = log_response(query, arguments)
     latest = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
-        enable_cross_partition_query=True
+        enable_cross_partition_query=True,
+        response_hook=response_logger
     )
 
     try:
