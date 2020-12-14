@@ -80,7 +80,7 @@ def log_response(query, arguments):
             request_round=count
         )
 
-        logging.warning(custom_dims)
+        logging.info(custom_dims)
         logging.info(query, extra={"custom_dimensions": custom_dims})
 
     return process
