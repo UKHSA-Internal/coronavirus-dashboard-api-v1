@@ -585,4 +585,7 @@ if ENVIRONMENT == "DEVELOPMENT":
 
         'newCasesByPublishDateAgeDemographics': list,
         'newCasesBySpecimenDateAgeDemographics': list,
+
+        "uniqueCasePositivityBySpecimenDateRollingSum": float,
+        "uniquePeopleTestedBySpecimenDateRollingSum": int,
     }
