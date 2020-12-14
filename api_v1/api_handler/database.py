@@ -58,7 +58,7 @@ db = client.get_database_client(DatabaseCredentials.db_name)
 container = db.get_container_client(DatabaseCredentials.data_collection)
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=2048)
 def get_count(query, date, **kwargs):
     """
     Count is a very expensive DB call, and is therefore cached in the memory.
@@ -298,6 +298,11 @@ async def get_data(request: HttpRequest, tokens: QueryParser,
             *arguments,
             {'name': name, 'value': await param}
         )
+
+    arguments = [
+        *arguments,
+        {"name": "@seriesDate", "value": date}
+    ]
 
     if request.method == "HEAD":
         return await process_head(filters, ordering, arguments, date)

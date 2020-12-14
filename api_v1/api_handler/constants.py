@@ -188,7 +188,8 @@ class DBQueries(NamedTuple):
     data_query = Template("""\
 SELECT  VALUE $template 
 FROM    c 
-WHERE   $clause_script 
+WHERE   c.seriesDate = @seriesDate
+        AND $clause_script 
 $ordering
 """.replace("\n", " "))
 
@@ -197,7 +198,8 @@ $ordering
     latest_date_for_metric = Template(f"""\
 SELECT  TOP 1 (c.{ DATE_PARAM_NAME })
 FROM    c
-WHERE   $clause_script
+WHERE   c.seriesDate = @seriesDate
+        AND $clause_script
         AND IS_DEFINED(c.$latest_by)
 $ordering
 """.replace("\n", " "))
@@ -206,14 +208,16 @@ $ordering
     exists = Template("""\
 SELECT  TOP 1 VALUE (1)
 FROM    c 
-WHERE   $clause_script 
+WHERE   c.seriesDate = @seriesDate
+        AND $clause_script 
 $ordering
     """.replace("\n", " "))
 
     count = Template("""\
 SELECT  VALUE COUNT(1)
 FROM    c 
-WHERE   $clause_script 
+WHERE   c.seriesDate = @seriesDate
+        AND $clause_script 
 $ordering
     """.replace("\n", " "))
 
