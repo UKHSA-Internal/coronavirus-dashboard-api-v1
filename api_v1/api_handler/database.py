@@ -97,7 +97,7 @@ def get_count(query, date, **kwargs):
             query=query,
             parameters=[{"name": name, "value": value} for name, value in kwargs.items()],
             max_item_count=MAX_ITEMS_PER_RESPONSE,
-            enable_cross_partition_query=True,
+            # enable_cross_partition_query=True,
             partition_key=date,
             response_hook=response_logger
         ))
@@ -123,7 +123,7 @@ async def process_head(filters: str, ordering: OrderingType,
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
-        enable_cross_partition_query=True,
+        # enable_cross_partition_query=True,
         partition_key=date,
         response_hook=response_logger
     )
@@ -168,7 +168,7 @@ async def process_get(request: HttpRequest, filters: str,
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
-        enable_cross_partition_query=True,
+        # enable_cross_partition_query=True,
         partition_key=date,
         response_hook=response_logger
     )
@@ -253,7 +253,8 @@ async def get_latest_available(filters: str, latest_by: str,
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
-        enable_cross_partition_query=True,
+        partition_key=date
+        # enable_cross_partition_query=True,
         # response_hook=response_logger
     )
 
