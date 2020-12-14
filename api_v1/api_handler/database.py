@@ -10,6 +10,7 @@ from json import dumps
 from os import getenv
 from urllib.parse import urlparse
 from math import ceil
+from functools import lru_cache
 
 # 3rd party:
 from azure.cosmos.cosmos_client import CosmosClient
@@ -57,6 +58,26 @@ db = client.get_database_client(DatabaseCredentials.db_name)
 container = db.get_container_client(DatabaseCredentials.data_collection)
 
 
+@lru_cache(maxsize=1024)
+def get_count(query, date, **kwargs):
+    """
+    Count is a very expensive DB call, and is therefore cached in the memory.
+    """
+    try:
+        count_items = list(container.query_items(
+            query=query,
+            parameters=[{"name": name, "value": value} for name, value in kwargs.items()],
+            max_item_count=MAX_ITEMS_PER_RESPONSE,
+            enable_cross_partition_query=True,
+            partition_key=date
+        ))
+        count = count_items.pop()
+    except (IndexError, ValueError):
+        raise NotAvailable()
+
+    return count
+
+
 async def process_head(filters: str, ordering: OrderingType,
                        arguments: QueryArguments, date: str) -> QueryResponseType:
 
@@ -75,7 +96,7 @@ async def process_head(filters: str, ordering: OrderingType,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         enable_cross_partition_query=True,
-        # partition_key=date
+        partition_key=date
     )
 
     try:
@@ -108,24 +129,19 @@ async def process_get(request: HttpRequest, filters: str,
     logging.info(f"Query arguments: {arguments}")
     page_number = None
 
-    try:
-        count_items = list(container.query_items(
-            query=DBQueries.count.substitute(**subs),
-            parameters=arguments,
-            max_item_count=MAX_ITEMS_PER_RESPONSE,
-            enable_cross_partition_query=True,
-            # partition_key=date
-        ))
-        count = count_items.pop()
-    except (IndexError, ValueError):
-        raise NotAvailable()
+    count_query = DBQueries.count.substitute(**subs)
+    arguments_dict = {
+        item["name"]: item["value"]
+        for item in sorted(arguments, key=lambda v: v["name"])
+    }
+    count = get_count(count_query, date, **arguments_dict)
 
     items = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         enable_cross_partition_query=True,
-        # partition_key=date
+        partition_key=date
     )
 
     if tokens.page_number is not None:
