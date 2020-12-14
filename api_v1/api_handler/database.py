@@ -254,7 +254,7 @@ async def get_latest_available(filters: str, latest_by: str,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         enable_cross_partition_query=True,
-        response_hook=response_logger
+        # response_hook=response_logger
     )
 
     try:
@@ -306,6 +306,11 @@ async def get_data(request: HttpRequest, tokens: QueryParser,
 
     latest_by = await tokens.only_latest_by
 
+    arguments = (
+        *arguments,
+        {"name": "@seriesDate", "value": date}
+    )
+
     if latest_by is not None:
         param = get_latest_available(
             filters=filters,
@@ -324,11 +329,6 @@ async def get_data(request: HttpRequest, tokens: QueryParser,
             *arguments,
             {'name': name, 'value': await param}
         )
-
-    arguments = [
-        *arguments,
-        {"name": "@seriesDate", "value": date}
-    ]
 
     if request.method == "HEAD":
         return await process_head(filters, ordering, arguments, date)
