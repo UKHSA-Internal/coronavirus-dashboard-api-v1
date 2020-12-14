@@ -50,7 +50,8 @@ logger.setLevel(logging.WARNING)
 DB_KWS = dict(
     url=DatabaseCredentials.host,
     credential={'masterKey': DatabaseCredentials.key},
-    preferred_locations=PREFERRED_LOCATIONS
+    preferred_locations=PREFERRED_LOCATIONS,
+    connection_timeout=10000
 )
 
 client = CosmosClient(**DB_KWS)
