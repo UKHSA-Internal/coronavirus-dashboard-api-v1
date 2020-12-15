@@ -221,11 +221,11 @@ class QueryParser:
                 raise InvalidStructure()
 
         current_len = len(structure)
-        if current_len > MAX_STRUCTURE_LENGTH:
-            raise StructureTooLarge(
-                max_allowed=MAX_STRUCTURE_LENGTH,
-                current_count=current_len
-            )
+        # if current_len > MAX_STRUCTURE_LENGTH:
+        #     raise StructureTooLarge(
+        #         max_allowed=MAX_STRUCTURE_LENGTH,
+        #         current_count=current_len
+        #     )
         return await format_structure(structure)
 
     async def extract_latest_filter(self) -> Union[str, None]:
