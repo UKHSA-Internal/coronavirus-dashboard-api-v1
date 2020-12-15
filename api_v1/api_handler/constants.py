@@ -56,7 +56,8 @@ __all__ = [
     "PAGINATION_PATTERN",
     "MAX_ITEMS_PER_RESPONSE",
     "DEFAULT_LATEST_ORDERING",
-    "SELF_URL"
+    "SELF_URL",
+    "MAX_STRUCTURE_LENGTH"
 ]
 
 
@@ -75,7 +76,7 @@ REPORT_DATE_PARAM_NAME = 'releaseTimestamp'
 MAX_DATE_QUERIES = 1
 
 MAX_QUERY_PARAMS: int = 5
-
+MAX_STRUCTURE_LENGTH: int = 8
 DATE_PARAM_NAME = "date"
 
 DATE_PARAMS: Set[str] = {
