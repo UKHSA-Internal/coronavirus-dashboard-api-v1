@@ -142,12 +142,12 @@ async def format_structure(struct: StructureType) -> str:
     if isinstance(struct, dict):
         formatter = await get_formatter("JSON")
         pattern = re.compile(
-            r'"(?P<new_name>[a-z2860]{2,40})":\s*"(?P<db_name>[a-z2860]{2,40})"',
+            r'"(?P<new_name>[a-z2860]{2,50})":\s*"(?P<db_name>[a-z2860]{2,50})"',
             re.IGNORECASE
         )
     elif isinstance(struct, list):
         formatter = await get_formatter("Array")
-        pattern = re.compile(r'"(?P<db_name>[a-z2860]{2,40})"', re.IGNORECASE)
+        pattern = re.compile(r'"(?P<db_name>[a-z2860]{2,50})"', re.IGNORECASE)
     else:
         raise InvalidStructure()
 
