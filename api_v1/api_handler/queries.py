@@ -7,7 +7,7 @@ from datetime import datetime
 import re
 from hashlib import blake2b
 from typing import Tuple, Union, Awaitable
-from json import loads
+from json import loads, JSONDecodeError
 from urllib.parse import unquote_plus, unquote
 
 # 3rd party:
@@ -24,7 +24,8 @@ from .constants import (
 from .exceptions import (
     IncorrectQueryValueType, InvalidQueryParameter,
     ExceedsMaxParameters, InvalidQuery, ValueNotAcceptable,
-    RequestTooLarge, UnauthorisedRequest, StructureTooLarge
+    RequestTooLarge, UnauthorisedRequest, StructureTooLarge,
+    InvalidStructure
 )
 
 from .types import QueryArguments, StringOrNumber, QueryData
@@ -213,7 +214,11 @@ class QueryParser:
         if found:
             raw_json = found.group(2)
             self._query = self._query.replace(found.group(1), str())
-            structure = loads(unquote_plus(raw_json))
+
+            try:
+                structure = loads(unquote_plus(raw_json))
+            except JSONDecodeError:
+                raise InvalidStructure()
 
         current_len = len(structure)
         if current_len > MAX_STRUCTURE_LENGTH:
