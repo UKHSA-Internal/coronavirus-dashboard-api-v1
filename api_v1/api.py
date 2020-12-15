@@ -115,8 +115,7 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
             "status": getattr(err, 'phrase')
         }
 
-        logging.warning(e)
-
+        logging.exception(e)
         return err, response, url.query, formatter
 
 
