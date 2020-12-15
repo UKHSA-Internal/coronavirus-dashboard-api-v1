@@ -171,7 +171,8 @@ class ValueNotAcceptable(APIException):
 
 class InvalidStructure(APIException):
     message = (
-        "Invalid structure. The structure must either be a JSON, or an Array object."
+        "Invalid structure. The structure must either be a JSON, or an Array object. "
+        "Make sure you use double quotation marks in the structure."
     )
     code = HTTPStatus.EXPECTATION_FAILED
 
