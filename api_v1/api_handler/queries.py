@@ -18,13 +18,13 @@ from .constants import (
     STRING_TRANSFORMATION, MAX_DATE_QUERIES,
     REPORT_DATE_PARAM_NAME, DEFAULT_STRUCTURE,
     DATE_PARAMS, RESTRICTED_PARAMETER_VALUES,
-    PAGINATION_PATTERN
+    PAGINATION_PATTERN, MAX_STRUCTURE_LENGTH
 )
 
 from .exceptions import (
     IncorrectQueryValueType, InvalidQueryParameter,
     ExceedsMaxParameters, InvalidQuery, ValueNotAcceptable,
-    RequestTooLarge, UnauthorisedRequest
+    RequestTooLarge, UnauthorisedRequest, StructureTooLarge
 )
 
 from .types import QueryArguments, StringOrNumber, QueryData
@@ -215,6 +215,12 @@ class QueryParser:
             self._query = self._query.replace(found.group(1), str())
             structure = loads(unquote_plus(raw_json))
 
+        current_len = len(structure)
+        if current_len > MAX_STRUCTURE_LENGTH:
+            raise StructureTooLarge(
+                max_allowed=MAX_STRUCTURE_LENGTH,
+                current_count=current_len
+            )
         return await format_structure(structure)
 
     async def extract_latest_filter(self) -> Union[str, None]:
