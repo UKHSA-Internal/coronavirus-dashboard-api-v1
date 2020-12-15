@@ -163,7 +163,8 @@ AREA_TYPES = {
     "region": "region",
     "nhsregion": "nhsRegion",
     "overview": "overview",
-    "nation": "nation"
+    "nation": "nation",
+    "nhstrust": "nhsTrust"
 }
 
 STRING_TRANSFORMATION = {
