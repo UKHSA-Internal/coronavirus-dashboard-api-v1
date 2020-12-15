@@ -46,7 +46,8 @@ __all__ = [
     'InvalidQuery',
     'RequestTooLarge',
     'NotAvailable',
-    "UnauthorisedRequest"
+    "UnauthorisedRequest",
+    "StructureTooLarge"
 ]
 
 
@@ -192,6 +193,18 @@ class RequestTooLarge(APIException):
 
     def __init__(self, *, allowed_max: int, param_name: str):
         super().__init__(allowed_max=allowed_max, param_name=param_name)
+
+
+class StructureTooLarge(APIException):
+    message = (
+        'You may only request a maximum number of $max_allowed metrics per '
+        'request. Current number of metrics in your structure: $current_count '
+        '- please reduce the number of metrics and try again.'
+    )
+    code = HTTPStatus.REQUEST_ENTITY_TOO_LARGE
+
+    def __init__(self, *, max_allowed: int, current_count: int):
+        super().__init__(max_allowed=max_allowed, current_count=current_count)
 
 
 class NotAvailable(APIException):
