@@ -41,7 +41,7 @@ __all__ = [
 ]
 
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
-PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")
+PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",") or None
 
 
 logger = logging.getLogger('azure')
@@ -70,18 +70,23 @@ def log_response(query, arguments):
     count = 0
 
     def process(metadata, results):
-        nonlocal count
+        nonlocal count, query
+
+        for item in arguments:
+            logging.warning(item)
+            query = query.replace(item['name'], item['value'])
 
         custom_dims = dict(
-            response_count=metadata.get('x-ms-item-count', None),
             chrage=metadata.get('x-ms-request-charge', None),
+            query=query,
+            query_raw=query,
+            response_count=metadata.get('x-ms-item-count', None),
             path=metadata.get('x-ms-alt-content-path', None),
-            parameters=dumps(arguments, separators=(",", ":")),
+            parameters=arguments,
             request_round=count
         )
 
-        logging.info(custom_dims)
-        logging.info(query, extra={"custom_dimensions": custom_dims})
+        logging.info(dumps(custom_dims, separators=(",", ":")))
 
     return process
 
@@ -91,11 +96,13 @@ def get_count(query, date, **kwargs):
     """
     Count is a very expensive DB call, and is therefore cached in the memory.
     """
-    response_logger = log_response(query, kwargs)
+    params = [{"name": name, "value": value} for name, value in kwargs.items()]
+    response_logger = log_response(query, params)
+
     try:
         count_items = list(container.query_items(
             query=query,
-            parameters=[{"name": name, "value": value} for name, value in kwargs.items()],
+            parameters=params,
             max_item_count=MAX_ITEMS_PER_RESPONSE,
             # enable_cross_partition_query=True,
             partition_key=date,
