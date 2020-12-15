@@ -73,11 +73,10 @@ def log_response(query, arguments):
         nonlocal count, query
 
         for item in arguments:
-            logging.warning(item)
             query = query.replace(item['name'], item['value'])
 
         custom_dims = dict(
-            chrage=metadata.get('x-ms-request-charge', None),
+            charge=metadata.get('x-ms-request-charge', None),
             query=query,
             query_raw=query,
             response_count=metadata.get('x-ms-item-count', None),
@@ -86,7 +85,7 @@ def log_response(query, arguments):
             request_round=count
         )
 
-        logging.info(dumps(custom_dims, separators=(",", ":")))
+        logging.info(f"DB QUERY: { dumps(custom_dims, separators=(',', ':')) }")
 
     return process
 
