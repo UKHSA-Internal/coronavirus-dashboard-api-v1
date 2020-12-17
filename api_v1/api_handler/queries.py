@@ -158,7 +158,7 @@ class QueryParser:
             (
                 (?P<name>[a-z]{2,50})
                 (?P<operator>[<>!]?=?)
-                (?P<value>[a-z0-9,'.\-\s]{1,50})
+                (?P<value>[a-z0-9,'.\-\s]{1,75})
                 (?P<connector>[;|]?)
             )
         ''',
