@@ -366,6 +366,11 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
 
     "uniqueCasePositivityBySpecimenDateRollingSum": float,
     "uniquePeopleTestedBySpecimenDateRollingSum": int,
+
+    "cumWeeklyNsoDeathsByRegDate": int,
+    "newWeeklyNsoDeathsByRegDate": int,
+    "cumWeeklyNsoCareHomeDeathsByRegDate": int,
+    "newWeeklyNsoCareHomeDeathsByRegDate": int,
 }
 
 
@@ -593,4 +598,14 @@ if ENVIRONMENT == "DEVELOPMENT":
 
         "uniqueCasePositivityBySpecimenDateRollingSum": float,
         "uniquePeopleTestedBySpecimenDateRollingSum": int,
+
+        "newPeopleReceivingFirstDose": int,
+        "cumPeopleReceivingFirstDose": int,
+        "newPeopleReceivingSecondDose": int,
+        "cumPeopleReceivingSecondDose": int,
+    
+        "cumWeeklyNsoDeathsByRegDate": int,
+        "newWeeklyNsoDeathsByRegDate": int,
+        "cumWeeklyNsoCareHomeDeathsByRegDate": int,
+        "newWeeklyNsoCareHomeDeathsByRegDate": int,
     }
