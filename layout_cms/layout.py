@@ -8,7 +8,7 @@ from json import dumps
 from os.path import join as join_path, split as split_path, splitext
 from asyncio import get_event_loop, Lock
 from http import HTTPStatus
-from typing import NoReturn
+from typing import NoReturn, NamedTuple
 from re import compile as re_compile, DOTALL, VERBOSE, MULTILINE
 
 # 3rd party:
@@ -71,12 +71,17 @@ DEV_ONLY_LINE_PATTERN = re_compile(r"""
 """, flags=VERBOSE | MULTILINE)
 
 
+class ProcessedLayout(NamedTuple):
+    json_data: str
+    yaml_data: str
+
+
 def custom_json_encoder(value):
     if isinstance(value, type):
         return value.__name__
 
 
-async def prepare_data(data: str) -> str:
+async def prepare_data(data: str) -> ProcessedLayout:
     """
     Prepares YAML files by applying the relevant ``DevOnly`` rules,
     the converts the data into JSON and produces a minified JSON
@@ -89,7 +94,7 @@ async def prepare_data(data: str) -> str:
 
     Returns
     -------
-    str
+    ProcessedLayout
         Minified JSON data.
     """
     if processor_settings.ENVIRONMENT != processor_settings.DEV_ENV:
@@ -99,13 +104,15 @@ async def prepare_data(data: str) -> str:
     if processor_settings.ENVIRONMENT != processor_settings.DEV_ENV and "devonly" in data.lower():
         raise RuntimeError("Contains unauthorised materials")
 
-    data = load_yaml(data, Loader=FullLoader)
+    parsed_data = load_yaml(data, Loader=FullLoader)
 
-    return dumps(
-        data,
+    json_data = dumps(
+        parsed_data,
         separators=processor_settings.JSON_SEPARATORS,
         default=custom_json_encoder
     )
+
+    return ProcessedLayout(json_data=json_data, yaml_data=data)
 
 
 async def process_and_upload_data(path: str, get_file_data: FileFetcherType,
@@ -134,17 +141,28 @@ async def process_and_upload_data(path: str, get_file_data: FileFetcherType,
     _, file_name = split_path(path)
     # Files are stored as JSON - the extension must be updated:
     file_name, _ = splitext(file_name)
-    file_name = f"{file_name}.json"
+    json_name = f"{file_name}.json"
+    yaml_name = f"{file_name}.yaml"
 
-    blob_path = str.join(processor_settings.URL_SEPARATOR, [STORAGE_PATH, file_name])
+    json_path = str.join(processor_settings.URL_SEPARATOR, [STORAGE_PATH, json_name])
+    yaml_path = str.join(processor_settings.URL_SEPARATOR, [STORAGE_PATH, yaml_name])
+
+    if ".github" in path:
+        return None
 
     raw_data = await get_file_data(path, base_path)
     data = await prepare_data(raw_data)
 
     # Uploading the data
-    with StorageClient(container=container, path=blob_path) as client:
+    with StorageClient(container=container, path=json_path) as client:
         async with Lock():
-            client.upload(data=data)
+            client.upload(data=data.json_data)
+
+    with StorageClient(container=container,
+                       path=yaml_path,
+                       content_type="application/x-yaml") as client:
+        async with Lock():
+            client.upload(data=data.yaml_data)
 
 process_and_upload_data: CallbackType = process_and_upload_data
 
