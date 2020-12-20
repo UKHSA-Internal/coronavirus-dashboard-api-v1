@@ -71,6 +71,11 @@ DEV_ONLY_LINE_PATTERN = re_compile(r"""
 """, flags=VERBOSE | MULTILINE)
 
 
+def custom_json_encoder(value):
+    if isinstance(value, type):
+        return value.__name__
+
+
 async def prepare_data(data: str) -> str:
     """
     Prepares YAML files by applying the relevant ``DevOnly`` rules,
@@ -96,7 +101,11 @@ async def prepare_data(data: str) -> str:
 
     data = load_yaml(data, Loader=FullLoader)
 
-    return dumps(data, separators=processor_settings.JSON_SEPARATORS)
+    return dumps(
+        data,
+        separators=processor_settings.JSON_SEPARATORS,
+        default=custom_json_encoder
+    )
 
 
 async def process_and_upload_data(path: str, get_file_data: FileFetcherType,
