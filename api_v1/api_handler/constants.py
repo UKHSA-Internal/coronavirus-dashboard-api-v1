@@ -363,6 +363,7 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
 
     'newCasesByPublishDateAgeDemographics': list,
     'newCasesBySpecimenDateAgeDemographics': list,
+    'newDeaths28DaysByDeathDateAgeDemographics': list,
 
     "uniqueCasePositivityBySpecimenDateRollingSum": float,
     "uniquePeopleTestedBySpecimenDateRollingSum": int,
@@ -595,6 +596,7 @@ if ENVIRONMENT == "DEVELOPMENT":
 
         'newCasesByPublishDateAgeDemographics': list,
         'newCasesBySpecimenDateAgeDemographics': list,
+        'newDeaths28DaysByDeathDateAgeDemographics': list,
 
         "uniqueCasePositivityBySpecimenDateRollingSum": float,
         "uniquePeopleTestedBySpecimenDateRollingSum": int,
