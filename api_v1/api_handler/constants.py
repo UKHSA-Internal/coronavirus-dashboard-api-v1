@@ -372,6 +372,11 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "newWeeklyNsoDeathsByRegDate": int,
     "cumWeeklyNsoCareHomeDeathsByRegDate": int,
     "newWeeklyNsoCareHomeDeathsByRegDate": int,
+
+    "newPeopleReceivingFirstDose": int,
+    "cumPeopleReceivingFirstDose": int,
+    "newPeopleReceivingSecondDose": int,
+    "cumPeopleReceivingSecondDose": int,
 }
 
 
