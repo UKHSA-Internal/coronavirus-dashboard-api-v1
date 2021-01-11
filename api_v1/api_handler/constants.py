@@ -377,6 +377,19 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "cumPeopleReceivingFirstDose": int,
     "newPeopleReceivingSecondDose": int,
     "cumPeopleReceivingSecondDose": int,
+
+    "cumPeopleVaccinatedFirstDoseByPublishDate": int,
+    "cumPeopleVaccinatedSecondDoseByPublishDate": int,
+    "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
+    "newVaccinesGivenByPublishDate": int,
+    "newPeopleVaccinatedFirstDoseByPublishDate": int,
+    "cumPeopleVaccinatedCompleteByPublishDate": int,
+    "newPeopleVaccinatedCompleteByPublishDate": int,
+    "newPeopleVaccinatedSecondDoseByPublishDate": int,
+    "weeklyPeopleVaccinatedFirstDoseByVaccinationDate": int,
+    "cumVaccinesGivenByPublishDate": int,
+    "weeklyPeopleVaccinatedSecondDoseByVaccinationDate": int,
+    "cumPeopleVaccinatedSecondDoseByVaccinationDate": int,
 }
 
 
@@ -615,4 +628,17 @@ if ENVIRONMENT == "DEVELOPMENT":
         "newWeeklyNsoDeathsByRegDate": int,
         "cumWeeklyNsoCareHomeDeathsByRegDate": int,
         "newWeeklyNsoCareHomeDeathsByRegDate": int,
+
+        "cumPeopleVaccinatedFirstDoseByPublishDate": int,
+        "cumPeopleVaccinatedSecondDoseByPublishDate": int,
+        "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
+        "newVaccinesGivenByPublishDate": int,
+        "newPeopleVaccinatedFirstDoseByPublishDate": int,
+        "cumPeopleVaccinatedCompleteByPublishDate": int,
+        "newPeopleVaccinatedCompleteByPublishDate": int,
+        "newPeopleVaccinatedSecondDoseByPublishDate": int,
+        "weeklyPeopleVaccinatedFirstDoseByVaccinationDate": int,
+        "cumVaccinesGivenByPublishDate": int,
+        "weeklyPeopleVaccinatedSecondDoseByVaccinationDate": int,
+        "cumPeopleVaccinatedSecondDoseByVaccinationDate": int,
     }
