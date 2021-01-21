@@ -627,6 +627,9 @@ if ENVIRONMENT == "DEVELOPMENT":
         "cumWeeklyNsoCareHomeDeathsByRegDate": int,
         "newWeeklyNsoCareHomeDeathsByRegDate": int,
 
+        "newDailyNsoDeathsByDeathDate": int,
+        "cumDailyNsoDeathsByDeathDate": int,
+
         "cumPeopleVaccinatedFirstDoseByPublishDate": int,
         "cumPeopleVaccinatedSecondDoseByPublishDate": int,
         "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
