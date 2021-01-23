@@ -98,14 +98,20 @@ def get_count(query, date, **kwargs):
     params = [{"name": name, "value": value} for name, value in kwargs.items()]
     response_logger = log_response(query, params)
 
+    query_kws = dict()
+    if ENVIRONMENT != "STAGING":
+        query_kws["partition_key"] = date
+    else:
+        query_kws['enable_cross_partition_query'] = True
+
     try:
         count_items = list(container.query_items(
             query=query,
             parameters=params,
             max_item_count=MAX_ITEMS_PER_RESPONSE,
             # enable_cross_partition_query=True,
-            partition_key=date,
-            response_hook=response_logger
+            response_hook=response_logger,
+            **query_kws
         ))
         count = count_items.pop()
     except (IndexError, ValueError):
@@ -124,14 +130,20 @@ async def process_head(filters: str, ordering: OrderingType,
         ordering=await ordering_script
     )
 
+    query_kws = dict()
+    if ENVIRONMENT != "STAGING":
+        query_kws["partition_key"] = date
+    else:
+        query_kws['enable_cross_partition_query'] = True
+
     response_logger = log_response(query, arguments)
     items = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         # enable_cross_partition_query=True,
-        partition_key=date,
-        response_hook=response_logger
+        response_hook=response_logger,
+        **query_kws
     )
 
     try:
@@ -169,14 +181,20 @@ async def process_get(request: HttpRequest, filters: str,
     }
     count = get_count(count_query, date, **arguments_dict)
 
+    query_kws = dict()
+    if ENVIRONMENT != "STAGING":
+        query_kws["partition_key"] = date
+    else:
+        query_kws['enable_cross_partition_query'] = True
+
     response_logger = log_response(query, arguments)
     items = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
         # enable_cross_partition_query=True,
-        partition_key=date,
-        response_hook=response_logger
+        response_hook=response_logger,
+        **query_kws
     )
 
     if tokens.page_number is not None:
@@ -190,11 +208,9 @@ async def process_get(request: HttpRequest, filters: str,
         if page_number is not None:
             page = 0
             while page < page_number:
-                # for ind, page in enumerate(paginated_items):
                 res = next(paginated_items)
                 page += 1
-                # break
-                # results = list(paginated_items[page_number - 1])
+
             results = list(res)
         else:
             results = list(next(paginated_items))
@@ -254,12 +270,18 @@ async def get_latest_available(filters: str, latest_by: str,
 
     # ToDo: Return data with CSV format.
 
+    query_kws = dict()
+    if ENVIRONMENT != "STAGING":
+        query_kws["partition_key"] = date
+    else:
+        query_kws['enable_cross_partition_query'] = True
+
     response_logger = log_response(query, arguments)
     latest = container.query_items(
         query=query,
         parameters=arguments,
         max_item_count=MAX_ITEMS_PER_RESPONSE,
-        partition_key=date
+        **query_kws
         # enable_cross_partition_query=True,
         # response_hook=response_logger
     )
@@ -305,9 +327,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser,
     extra_queries = await get_assurance_query(structure)
     filters += extra_queries
 
-    date = timestamp
-    if ENVIRONMENT in ["PRODUCTION", "DEVELOPMENT"]:
-        date = series_date
+    date = series_date
 
     max_items = MAX_ITEMS_PER_RESPONSE
 
