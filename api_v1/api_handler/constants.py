@@ -368,6 +368,9 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "uniqueCasePositivityBySpecimenDateRollingSum": float,
     "uniquePeopleTestedBySpecimenDateRollingSum": int,
 
+    "newDailyNsoDeathsByDeathDate": int,
+    "cumDailyNsoDeathsByDeathDate": int,
+
     "cumWeeklyNsoDeathsByRegDate": int,
     "cumWeeklyNsoDeathsByRegDateRate": float,
     "newWeeklyNsoDeathsByRegDate": int,
