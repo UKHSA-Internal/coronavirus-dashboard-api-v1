@@ -180,7 +180,7 @@ class QueryParser:
         self.last_update = last_update
         self.structure: Awaitable[str] = self.extract_structure()
         self.formatter: Awaitable[str] = self.extract_formatter()
-        self.only_latest_by: Awaitable[str] = self.extract_latest_filter()
+        self.only_latest_by: str = self.extract_latest_filter()
         self.query_data = self.extract_content()
         self.page_number = self.get_page_number()
 
@@ -208,27 +208,22 @@ class QueryParser:
 
         return param
 
-    async def extract_structure(self) -> str:
+    async def extract_structure(self):
         structure = DEFAULT_STRUCTURE
         found = self.structure_pattern.search(self._query)
+
         if found:
             raw_json = found.group(2)
             self._query = self._query.replace(found.group(1), str())
 
             try:
-                structure = loads(unquote_plus(raw_json))
+                structure = unquote_plus(raw_json)
             except JSONDecodeError:
                 raise InvalidStructure()
 
-        current_len = len(structure)
-        # if current_len > MAX_STRUCTURE_LENGTH:
-        #     raise StructureTooLarge(
-        #         max_allowed=MAX_STRUCTURE_LENGTH,
-        #         current_count=current_len
-        #     )
         return await format_structure(structure)
 
-    async def extract_latest_filter(self) -> Union[str, None]:
+    def extract_latest_filter(self) -> Union[str, None]:
         found = self.latest_by.search(self._query)
 
         if not found:
@@ -246,7 +241,7 @@ class QueryParser:
 
         return param
 
-    def extract_content(self) -> Tuple[QueryArguments, str]:
+    def extract_content(self) -> QueryData:
         """
 
         Raises
@@ -259,11 +254,9 @@ class QueryParser:
         -------
         Tuple[QueryArguments, str]
         """
-        query = str()
+        query = "AND "
         arguments = list()
         param_names = list()
-
-        date_seen = False
 
         filters = self.filter_pattern.search(str(self))
 
@@ -272,24 +265,14 @@ class QueryParser:
         else:
             filters_value = unquote(unquote_plus(filters.group(1)))
 
-        for args in self.get_queries(filters_value):
+        area_type = None
+
+        for index, args in enumerate(self.get_queries(filters_value), start=2):
             name, operator, value = (
                 args.group("name"),
                 args.group("operator"),
                 args.group("value")
             )
-
-            # Having more than one date in the query would yield
-            # huge amounts of data and is therefore restricted.
-            # Users can only retrieve values for one date at a time.
-            if name == REPORT_DATE_PARAM_NAME:
-                if date_seen or operator != '=':
-                    raise RequestTooLarge(
-                        allowed_max=MAX_DATE_QUERIES,
-                        param_name=REPORT_DATE_PARAM_NAME
-                    )
-
-                date_seen = True
 
             param_names.append(name)
 
@@ -301,16 +284,14 @@ class QueryParser:
                 raise UnauthorisedRequest(name=name, operator=operator, value=value)
 
             value = convert_value_type(name, operator, value)
-            param_name = transformer.param_fn(f'c.{name}')
+            param_name = transformer.param_fn(name)
 
-            hash_key = blake2b(args.group(0).encode(), digest_size=6).hexdigest()
+            if name == "areaType":
+                area_type = value
 
-            query += f'{param_name} {operator} @{name}{hash_key}'
+            query += f'{param_name} {operator} ${index}'
 
-            arguments.append({
-                "name": f'@{name}{hash_key}',
-                "value": transformer.value_fn(value),
-            })
+            arguments.append(transformer.value_fn(value))
 
             connector = args.group("connector")
             if connector == ";":
@@ -320,9 +301,6 @@ class QueryParser:
 
         current_total = len(arguments)
 
-        return self._run_quality_assurance(current_total, param_names, query, arguments)
-
-    def _run_quality_assurance(self, current_total, param_names, query, arguments):
         if current_total > MAX_QUERY_PARAMS:
             raise ExceedsMaxParameters(
                 current_total=current_total,
@@ -332,14 +310,7 @@ class QueryParser:
         elif not current_total:
             raise InvalidQuery()
 
-        if 'c.releaseTimestamp' not in query:
-            query += f" AND c.releaseTimestamp = @latestDataTimestamp"
-            arguments.append({
-                'name': '@latestDataTimestamp',
-                'value': self.last_update
-            })
-
-        return QueryData(arguments=arguments, query=query)
+        return QueryData(arguments=arguments, query=query, area_type=area_type)
 
     def get_queries(self, filters_value):
         for args in self.token_pattern.finditer(filters_value):
