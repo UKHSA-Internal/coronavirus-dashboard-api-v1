@@ -69,8 +69,6 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
     """
     url = urlparse(req.url)
 
-    ordering = DEFAULT_ORDERING
-
     query = unquote_plus(url.query)
     logging.info(query)
 
@@ -85,10 +83,8 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
         response = await get_data(
             req,
             tokens,
-            ordering,
             formatter,
-            lastUpdateTimestamp,
-            seriesDate
+            lastUpdateTimestamp
         )
 
         return HTTPStatus.OK, response, url.query, formatter
