@@ -170,17 +170,20 @@ AREA_TYPES = {
 STRING_TRANSFORMATION = {
     'areaName': Transformer(
         value_fn=str.lower,
-        param_fn=lambda n: n.replace("areaName", "areaNameLower")
+        param_fn=lambda n: n.replace("areaName", "LOWER(area_name)")
     ),
     'areaType': Transformer(
         value_fn=lambda x: AREA_TYPES[str.lower(x)],
-        param_fn=str
+        param_fn=lambda n: n.replace("areaType", "area_type")
     ),
     'date': Transformer(
         value_fn=lambda x: x.split("T")[0],
         param_fn=str
     ),
-    'areaCode': Transformer(value_fn=str.upper, param_fn=str),
+    'areaCode': Transformer(
+        value_fn=str.upper,
+        param_fn=lambda n: n.replace("areaCode", "area_code")
+    ),
     'DEFAULT': Transformer(value_fn=lambda x: x, param_fn=lambda x: x)
 }
 
@@ -188,40 +191,79 @@ STRING_TRANSFORMATION = {
 class DBQueries(NamedTuple):
     # noinspection SqlResolve,SqlNoDataSourceInspection
     data_query = Template("""\
-SELECT  VALUE $template 
-FROM    c 
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script 
-$ordering
-""".replace("\n", " "))
+SELECT
+    area_code             AS "areaCode",
+    ref.area_type         AS "areaType",
+    area_name             AS "areaName",
+    date::VARCHAR         AS date,
+    metric,
+    (payload -> 'value')  AS "value"
+FROM covid19.time_series_p${partition} AS ts
+JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+JOIN covid19.release_reference AS rr  ON rr.id = release_id
+JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters
+ORDER BY area_code, date
+LIMIT $limit OFFSET $offset
+""")
 
     # Query assumes that the data is ordered (descending) by date.
     # noinspection SqlResolve,SqlNoDataSourceInspection
-    latest_date_for_metric = Template(f"""\
-SELECT  TOP 1 (c.{ DATE_PARAM_NAME })
-FROM    c
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script
-        AND IS_DEFINED(c.$latest_by)
-$ordering
-""".replace("\n", " "))
+    latest_date_for_metric = Template("""\
+SELECT
+    area_code             AS "areaCode",
+    ref.area_type         AS "areaType",
+    area_name             AS "areaName",
+    date::VARCHAR         AS date,
+    metric,
+    (payload -> 'value')  AS "value"
+FROM covid19.time_series_p${partition} AS ts
+JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+JOIN covid19.release_reference AS rr  ON rr.id = release_id
+JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters
+  AND date = (
+      SELECT MAX(date)
+      FROM covid19.time_series_p${partition} AS ts
+      JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+      JOIN covid19.release_reference AS rr  ON rr.id = release_id
+      JOIN covid19.area_reference    AS ref ON ref.id = area_id
+      WHERE
+            rr.released IS TRUE
+        AND metric = '$latest_by'
+        AND (payload ->> 'value') NOTNULL
+        $filters
+  )""")
 
     # noinspection SqlResolve,SqlNoDataSourceInspection
     exists = Template("""\
-SELECT  TOP 1 VALUE (1)
-FROM    c 
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script 
-$ordering
-    """.replace("\n", " "))
+SELECT (CASE WHEN (COUNT(*) > 0) THEN TRUE ELSE FALSE END) AS exists
+FROM covid19.time_series_p${partition} AS ts
+JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+JOIN covid19.release_reference AS rr  ON rr.id = release_id
+JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters
+LIMIT $limit OFFSET $offset""")
 
     count = Template("""\
-SELECT  VALUE COUNT(1)
-FROM    c 
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script 
-$ordering
-    """.replace("\n", " "))
+SELECT COUNT(*) AS count
+FROM covid19.time_series_p${partition} AS ts
+JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+JOIN covid19.release_reference AS rr  ON rr.id = release_id
+JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters""")
 
 
 DATA_TYPES: Dict[str, Callable[[str], Any]] = {
