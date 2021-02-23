@@ -170,21 +170,29 @@ AREA_TYPES = {
 STRING_TRANSFORMATION = {
     'areaName': Transformer(
         value_fn=str.lower,
-        param_fn=lambda n: n.replace("areaName", "LOWER(area_name)")
+        param_fn=lambda n: n.replace("areaName", "LOWER(area_name)"),
+        input_argument=lambda a: a
     ),
     'areaType': Transformer(
         value_fn=lambda x: AREA_TYPES[str.lower(x)],
-        param_fn=lambda n: n.replace("areaType", "area_type")
+        param_fn=lambda n: n.replace("areaType", "area_type"),
+        input_argument=lambda a: a
     ),
     'date': Transformer(
-        value_fn=lambda x: x.split("T")[0],
-        param_fn=str
+        value_fn=lambda x: datetime.strptime(x.split("T")[0], "%Y-%m-%d"),
+        param_fn=str,
+        input_argument="DATE({})".format
     ),
     'areaCode': Transformer(
         value_fn=str.upper,
-        param_fn=lambda n: n.replace("areaCode", "area_code")
+        param_fn=lambda n: n.replace("areaCode", "area_code"),
+        input_argument=lambda a: a
     ),
-    'DEFAULT': Transformer(value_fn=lambda x: x, param_fn=lambda x: x)
+    'DEFAULT': Transformer(
+        value_fn=lambda x: x,
+        param_fn=lambda x: x,
+        input_argument=lambda a: a
+    )
 }
 
 
