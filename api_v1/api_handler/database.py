@@ -18,20 +18,20 @@ import asyncpg
 
 from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
+
 from pandas import DataFrame
 
+from numpy import ceil
+
 # Internal:
-from .ordering import format_ordering
 from .constants import (
-    DBQueries, DATE_PARAM_NAME, DatabaseCredentials,
-    PAGINATION_PATTERN, MAX_ITEMS_PER_RESPONSE,
-    DEFAULT_LATEST_ORDERING, DATA_TYPES
+    DBQueries, DatabaseCredentials, PAGINATION_PATTERN,
+    MAX_ITEMS_PER_RESPONSE, DATA_TYPES
 )
 from .queries import QueryParser
-from .types import QueryResponseType, OrderingType, QueryData, QueryArguments, ResponseStructure
-from .exceptions import NotAvailable, ValueNotAcceptable
+from .types import QueryResponseType, QueryData, ResponseStructure
+from .exceptions import NotAvailable
 
-from numpy import vectorize, ceil
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Header
 __author__ = "Pouria Hadjibagheri"
@@ -284,6 +284,9 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
                     partition_id=partition_id,
                     filters=filters
                 )
+
+                if not count:
+                    raise NotAvailable()
 
             values = await conn.fetch(query, *db_args)
         else:
