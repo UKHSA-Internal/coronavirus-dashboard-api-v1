@@ -266,6 +266,7 @@ class QueryParser:
             filters_value = unquote(unquote_plus(filters.group(1)))
 
         area_type = None
+        default_transformer = STRING_TRANSFORMATION['DEFAULT']
 
         for index, args in enumerate(self.get_queries(filters_value), start=2):
             name, operator, value = (
@@ -276,8 +277,7 @@ class QueryParser:
 
             param_names.append(name)
 
-            transformer = STRING_TRANSFORMATION['DEFAULT']
-            transformer = STRING_TRANSFORMATION.get(name, transformer)
+            transformer = STRING_TRANSFORMATION.get(name, default_transformer)
 
             if (RESTRICTED_PARAMETER_VALUES.get(name) is not None and
                     value.lower() not in RESTRICTED_PARAMETER_VALUES.get(name, [])):
@@ -289,7 +289,7 @@ class QueryParser:
             if name == "areaType":
                 area_type = value
 
-            query += f'{param_name} {operator} ${index}'
+            query += f'{param_name} {operator} {transformer.input_argument(f"${index}")}'
 
             arguments.append(transformer.value_fn(value))
 
