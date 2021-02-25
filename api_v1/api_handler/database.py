@@ -5,12 +5,12 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Python:
 import logging
-from json import dumps
+from json import dumps, loads
 from os import getenv
 from urllib.parse import urlparse
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Awaitable, Union, Iterable, Any
+from typing import Awaitable, Union, Iterable, Any, Dict
 from datetime import datetime
 
 # 3rd party:
@@ -19,7 +19,7 @@ import asyncpg
 from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
 
-from pandas import DataFrame
+from pandas import DataFrame, json_normalize
 
 from numpy import ceil
 
@@ -51,13 +51,21 @@ single_partition_types = {"utla", "ltla", "nhsTrust", "msoa"}
 
 dtypes = DATA_TYPES.copy()
 dtypes["date"] = str
+
+type_map: Dict[object, object] = {
+    int: float,
+    float: float,
+    str: str
+}
+
 generic_dtypes = {
-    metric_name: dtypes[metric_name]
+    metric_name: type_map.get(dtypes[metric_name], object)
     if dtypes[metric_name] is not int else float
     for metric_name in dtypes
 }
-integer_dtypes = {type_ for type_ in dtypes if dtypes[type_] is int}
-string_dtypes = {type_ for type_ in dtypes if dtypes[type_] is str}
+integer_dtypes = {type_ for type_, base_type in dtypes.items() if base_type is int}
+string_dtypes = {type_ for type_, base_type in dtypes.items() if base_type is str}
+json_dtypes = {type_ for type_, base_type in dtypes.items() if base_type in [list, dict]}
 
 logger = logging.getLogger('azure')
 logger.setLevel(logging.WARNING)
@@ -244,6 +252,14 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
     return query
 
 
+def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
+    json_columns = json_dtypes.intersection(column_types)
+
+    df.loc[:, json_columns] = df.loc[:, json_columns].apply(lambda column: column.map(loads))
+
+    return df.astype(column_types)
+
+
 async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
                    timestamp: str) -> QueryResponseType:
     query_data: QueryData = tokens.query_data
@@ -316,7 +332,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         .pivot_table(values="value", index=base_metrics, columns="metric", aggfunc='first')
         .reset_index()
         .sort_values(["areaCode", "date"], ascending=[True, False])
-        .astype(column_types)
+        .pipe(format_dtypes, column_types=column_types)
         .loc[:, [*base_metrics, *response_metrics]]
         .pipe(format_data, response_metrics=response_metrics)
         .pipe(set_column_labels, structure=structure)
