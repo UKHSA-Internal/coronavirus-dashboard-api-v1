@@ -205,7 +205,10 @@ SELECT
     area_name             AS "areaName",
     date::VARCHAR         AS date,
     metric,
-    (payload -> 'value')  AS "value"
+    CASE
+        WHEN (payload ? 'value') THEN (payload -> 'value')
+        ELSE payload::JSONB
+    END AS value
 FROM covid19.time_series_p${partition} AS ts
 JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
 JOIN covid19.release_reference AS rr  ON rr.id = release_id
@@ -227,7 +230,10 @@ SELECT
     area_name             AS "areaName",
     date::VARCHAR         AS date,
     metric,
-    (payload -> 'value')  AS "value"
+    CASE
+        WHEN (payload ? 'value') THEN (payload -> 'value')
+        ELSE payload::JSONB
+    END AS value
 FROM covid19.time_series_p${partition} AS ts
 JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
 JOIN covid19.release_reference AS rr  ON rr.id = release_id
