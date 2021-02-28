@@ -183,11 +183,11 @@ def set_column_labels(df: DataFrame, structure: ResponseStructure):
 
 
 def format_response(df: DataFrame, request: HttpRequest, response_type: str,
-                    count: int, page_number: int) -> str:
+                    count: int, page_number: int, n_metrics: int) -> str:
     if response_type == 'csv':
         return df.to_csv(float_format="%.20g", index=False)
 
-    total_pages = int(ceil(count / MAX_ITEMS_PER_RESPONSE))
+    total_pages = int(ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics)))
     prepped_url = PAGINATION_PATTERN.sub("", request.url)
     parsed_url = urlparse(prepped_url)
     url = f"/v1/data?{parsed_url.query}".strip("&")
@@ -225,7 +225,7 @@ def get_partition_id(area_type: str, timestamp: str) -> str:
 
 
 async def get_query(request: HttpRequest, latest_by: Union[str, None], partition_id: str,
-                    filters: str, page_number: int) -> Awaitable[str]:
+                    filters: str, page_number: int, n_metrics: int) -> Awaitable[str]:
 
     if latest_by is not None:
         query = DBQueries.latest_date_for_metric.substitute(
@@ -237,15 +237,15 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
         query = DBQueries.data_query.substitute(
             partition=partition_id,
             filters=filters,
-            limit=MAX_ITEMS_PER_RESPONSE,
-            offset=MAX_ITEMS_PER_RESPONSE * (page_number - 1)
+            limit=MAX_ITEMS_PER_RESPONSE * n_metrics,
+            offset=MAX_ITEMS_PER_RESPONSE * n_metrics * (page_number - 1)
         )
     else:
         query = DBQueries.exists.substitute(
             partition=partition_id,
             filters=filters,
-            limit=MAX_ITEMS_PER_RESPONSE,
-            offset=MAX_ITEMS_PER_RESPONSE * (page_number - 1)
+            limit=MAX_ITEMS_PER_RESPONSE * n_metrics,
+            offset=MAX_ITEMS_PER_RESPONSE * n_metrics * (page_number - 1)
         )
 
     logging.info(query)
@@ -277,6 +277,8 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
     else:
         page_number = 1
 
+    n_metrics = len(metrics)
+
     partition_id = get_partition_id(query_data.area_type, timestamp)
 
     query = await get_query(
@@ -284,7 +286,8 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         latest_by=tokens.only_latest_by,
         partition_id=partition_id,
         filters=filters,
-        page_number=page_number
+        page_number=page_number,
+        n_metrics=n_metrics
     )
 
     db_args = [metrics, *arguments]
@@ -341,7 +344,8 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
             request=request,
             response_type=formatter,
             count=count,
-            page_number=page_number
+            page_number=page_number,
+            n_metrics=n_metrics
         )
     )
 
