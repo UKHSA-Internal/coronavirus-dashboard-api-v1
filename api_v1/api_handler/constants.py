@@ -217,7 +217,7 @@ WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
   $filters
-ORDER BY area_code, date
+ORDER BY date, area_code
 LIMIT $limit OFFSET $offset
 """)
 
@@ -253,7 +253,8 @@ WHERE
         AND metric = '$latest_by'
         AND (payload ->> 'value') NOTNULL
         $filters
-  )""")
+  )
+ORDER BY date, area_code""")
 
     # noinspection SqlResolve,SqlNoDataSourceInspection
     exists = Template("""\
