@@ -219,7 +219,7 @@ def get_partition_id(area_type: str, timestamp: str) -> str:
     if area_type.lower() not in single_partition_types:
         area_type = "other"
 
-    partition_id = f"{ts:%Y_%-m_%d}_{area_type.lower()}"
+    partition_id = f"{ts:%Y_%-m_%-d}_{area_type.lower()}"
 
     return partition_id
 
