@@ -47,7 +47,7 @@ ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
 PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",") or None
 
 base_metrics = ["areaType", "areaCode", "areaName", "date"]
-single_partition_types = {"utla", "ltla", "nhsTrust", "msoa"}
+single_partition_types = {"utla", "ltla", "nhstrust", "msoa"}
 
 dtypes = DATA_TYPES.copy()
 dtypes["date"] = str
