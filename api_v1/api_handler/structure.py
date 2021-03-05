@@ -15,16 +15,13 @@ Contributors:  Pouria Hadjibagheri
 # Imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Python:
-from string import Template
-from typing import Match, List, Callable
-from json import dumps, loads
-from datetime import datetime
+from json import loads
 import re
 
 # 3rd party:
 
 # Internal:
-from .exceptions import InvalidStructureParameter, InvalidStructure
+from .exceptions import InvalidStructure
 from .constants import DATA_TYPES
 from .types import StructureType
 
