@@ -226,6 +226,9 @@ def get_partition_id(area_type: str, timestamp: str) -> str:
 
 async def get_query(request: HttpRequest, latest_by: Union[str, None], partition_id: str,
                     filters: str, page_number: int, n_metrics: int) -> Awaitable[str]:
+    if ENVIRONMENT != "DEVELOPMENT":
+        # Released metrics only.
+        filters += f" AND mr.released IS TRUE"
 
     if latest_by is not None:
         query = DBQueries.latest_date_for_metric.substitute(
@@ -255,6 +258,7 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
 def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     json_columns = json_dtypes.intersection(column_types)
 
+    df = df.replace('null', None)
     df.loc[:, json_columns] = df.loc[:, json_columns].apply(lambda column: column.map(loads))
 
     return df.astype(column_types)
@@ -290,7 +294,11 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         n_metrics=n_metrics
     )
 
-    db_args = [metrics, *arguments]
+    db_args = [
+        metrics,
+        *arguments
+    ]
+    logging.info(dumps({"arguments": db_args}))
 
     count = dict()
 
