@@ -700,4 +700,17 @@ if ENVIRONMENT == "DEVELOPMENT":
         "weeklyPeopleVaccinatedFirstDoseByVaccinationDate": int,
         "weeklyPeopleVaccinatedSecondDoseByVaccinationDate": int,
         "cumPeopleVaccinatedSecondDoseByVaccinationDate": int,
+
+        'newCasesPCROnlyBySpecimenDateRollingSum': int,
+        'newCasesLFDOnlyBySpecimenDateRollingRate': float,
+        'newCasesLFDOnlyBySpecimenDate': int,
+        'newCasesLFDConfirmedPCRBySpecimenDate': int,
+        'newCasesLFDConfirmedPCRBySpecimenDateRollingRate': float,
+        'cumCasesPCROnlyBySpecimenDate': int,
+        'newCasesPCROnlyBySpecimenDateRollingRate': float,
+        'newCasesLFDOnlyBySpecimenDateRollingSum': int,
+        'cumCasesLFDConfirmedPCRBySpecimenDate': int,
+        'cumCasesLFDOnlyBySpecimenDate': int,
+        'newCasesPCROnlyBySpecimenDate': int,
+        'newCasesLFDConfirmedPCRBySpecimenDateRollingSum': int,
     }
