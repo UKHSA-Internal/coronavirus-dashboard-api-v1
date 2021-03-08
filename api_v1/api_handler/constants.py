@@ -179,7 +179,7 @@ STRING_TRANSFORMATION = {
         input_argument=lambda a: a
     ),
     'date': Transformer(
-        value_fn=lambda x: datetime.strptime(x.split("T")[0], "%Y-%m-%d"),
+        value_fn=lambda x: datetime.strptime(x.split("T")[0], "%Y-%m-%d").date(),
         param_fn=str,
         input_argument="DATE({})".format
     ),
