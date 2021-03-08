@@ -20,7 +20,7 @@ from typing import (
     NamedTuple, Callable, Tuple,
     BinaryIO, Awaitable
 )
-from datetime import datetime
+from datetime import datetime, date
 from http import HTTPStatus
 
 # 3rd party:
@@ -83,7 +83,7 @@ ResponseStructure = Union[Dict[str, str], List[str]]
 
 
 class Transformer(NamedTuple):
-    value_fn: Callable[[str], Union[str, datetime]]
+    value_fn: Callable[[str], Union[str, datetime, date]]
     param_fn: Union[Callable[[str], str], str.format]
     input_argument: Callable[[str], str]
 
