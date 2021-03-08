@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Awaitable, Union, Iterable, Any, Dict
-from datetime import datetime
+from datetime import datetime, date
 
 # 3rd party:
 import asyncpg
@@ -19,7 +19,7 @@ import asyncpg
 from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
 
-from pandas import DataFrame, json_normalize
+from pandas import DataFrame
 
 from numpy import ceil
 
@@ -60,7 +60,7 @@ type_map: Dict[object, object] = {
 
 generic_dtypes = {
     metric_name: type_map.get(dtypes[metric_name], object)
-    if dtypes[metric_name] is not int else float
+    if dtypes[metric_name] not in [int, float] else float
     for metric_name in dtypes
 }
 integer_dtypes = {type_ for type_, base_type in dtypes.items() if base_type is int}
@@ -80,6 +80,11 @@ DB_KWS = dict(
 client = CosmosClient(**DB_KWS)
 db = client.get_database_client(DatabaseCredentials.db_name)
 container = db.get_container_client(DatabaseCredentials.data_collection)
+
+
+def json_formatter(obj):
+    if isinstance(date, (date, datetime)):
+        return obj.isoformat()
 
 
 def log_response(query, arguments):
@@ -172,6 +177,10 @@ def set_column_labels(df: DataFrame, structure: ResponseStructure):
         return df
 
     response_columns = list(structure.values())
+    difference = set(response_columns) - set(df.columns)
+
+    for col in difference:
+        df = df.assign(**{col: None})
 
     df = (
         df
@@ -209,7 +218,7 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
         }
     }
 
-    return dumps(payload, separators=(",", ":"))
+    return dumps(payload, separators=(",", ":"), default=json_formatter)
 
 
 @lru_cache(32)
@@ -294,11 +303,12 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         n_metrics=n_metrics
     )
 
+    db_metrics = set(metrics) - {"areaCode", "areaName", "areaType", "date"}
     db_args = [
-        metrics,
+        list(db_metrics),
         *arguments
     ]
-    logging.info(dumps({"arguments": db_args}))
+    logging.info(dumps({"arguments": db_args}, default=json_formatter))
 
     count = dict()
 
