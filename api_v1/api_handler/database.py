@@ -256,7 +256,6 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
         query = DBQueries.exists.substitute(
             partition=partition_id,
             filters=filters,
-            limit=MAX_ITEMS_PER_RESPONSE * n_metrics,
             offset=MAX_ITEMS_PER_RESPONSE * n_metrics * (page_number - 1)
         )
 

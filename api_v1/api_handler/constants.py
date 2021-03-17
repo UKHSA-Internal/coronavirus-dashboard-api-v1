@@ -217,6 +217,7 @@ WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
   $filters
+ORDER BY area_code, date DESC
 LIMIT $limit OFFSET $offset
 """)
 
@@ -234,9 +235,9 @@ SELECT
         ELSE payload::JSONB
     END AS value
 FROM covid19.time_series_p${partition} AS ts
-JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
-JOIN covid19.release_reference AS rr  ON rr.id = release_id
-JOIN covid19.area_reference    AS ref ON ref.id = area_id
+    JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+    JOIN covid19.release_reference AS rr  ON rr.id = release_id
+    JOIN covid19.area_reference    AS ref ON ref.id = area_id
 WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
@@ -244,35 +245,37 @@ WHERE
   AND date = (
       SELECT MAX(date)
       FROM covid19.time_series_p${partition} AS ts
-      JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
-      JOIN covid19.release_reference AS rr  ON rr.id = release_id
-      JOIN covid19.area_reference    AS ref ON ref.id = area_id
+          JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+          JOIN covid19.release_reference AS rr  ON rr.id = release_id
+          JOIN covid19.area_reference    AS ref ON ref.id = area_id
       WHERE
             rr.released IS TRUE
         AND metric = '$latest_by'
         AND (payload ->> 'value') NOTNULL
         $filters
-  )""")
+  )
+ORDER BY area_code, date DESC""")
 
     # noinspection SqlResolve,SqlNoDataSourceInspection
     exists = Template("""\
-SELECT (CASE WHEN (COUNT(*) > 0) THEN TRUE ELSE FALSE END) AS exists
+SELECT TRUE AS exists
 FROM covid19.time_series_p${partition} AS ts
-JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
-JOIN covid19.release_reference AS rr  ON rr.id = release_id
-JOIN covid19.area_reference    AS ref ON ref.id = area_id
+    JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+    JOIN covid19.release_reference AS rr  ON rr.id = release_id
+    JOIN covid19.area_reference    AS ref ON ref.id = area_id
 WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
   $filters
-LIMIT $limit OFFSET $offset""")
+LIMIT ALL OFFSET $offset
+FETCH FIRST 1 ROW ONLY""")
 
     count = Template("""\
 SELECT COUNT(*) AS count
 FROM covid19.time_series_p${partition} AS ts
-JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
-JOIN covid19.release_reference AS rr  ON rr.id = release_id
-JOIN covid19.area_reference    AS ref ON ref.id = area_id
+    JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+    JOIN covid19.release_reference AS rr  ON rr.id = release_id
+    JOIN covid19.area_reference    AS ref ON ref.id = area_id
 WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
