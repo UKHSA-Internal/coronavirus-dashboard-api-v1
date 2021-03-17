@@ -267,7 +267,7 @@ WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
   $filters
-LIMIT ALL OFFSET $offset
+OFFSET $offset
 FETCH FIRST 1 ROW ONLY""")
 
     count = Template("""\
