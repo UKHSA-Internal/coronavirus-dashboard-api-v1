@@ -147,7 +147,7 @@ class QueryParser:
 
     filter_pattern = re.compile(r'filters=([^&]+)(&|$)')
 
-    latest_by = re.compile(r'(&?latestBy=([a-z2860]{2,50}))&?', re.I)
+    latest_by = re.compile(r'(&?latestBy=([a-z2860]{2,75}))&?', re.I)
 
     format_as = re.compile(r'(&?format=(json|csv|xml))&?')
 
@@ -156,7 +156,7 @@ class QueryParser:
     token_pattern = re.compile(
         r'''
             (
-                (?P<name>[a-z]{2,50})
+                (?P<name>[a-z]{2,75})
                 (?P<operator>[<>!]?=?)
                 (?P<value>[a-z0-9,'.\-()\s]{1,75})
                 (?P<connector>[;|]?)
