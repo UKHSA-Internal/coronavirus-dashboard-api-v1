@@ -15,6 +15,6 @@ azure-storage-blob==12.3.2
 azure-storage-file-share==12.1.2
 redis==3.5.3
 azure-cosmos==4.1.0
-PyYAML==5.3.1
+PyYAML==5.4
 jinja2==2.11.2
 pytz==2020.01
