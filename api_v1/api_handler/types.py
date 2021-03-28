@@ -20,6 +20,7 @@ from typing import (
     NamedTuple, Callable, Tuple,
     BinaryIO, Awaitable
 )
+from datetime import datetime, date
 from http import HTTPStatus
 
 # 3rd party:
@@ -46,7 +47,8 @@ __all__ = [
     'APIFunctionType',
     'StringOrNumber',
     'ApiResponse',
-    'QueryData'
+    'QueryData',
+    'ResponseStructure'
 ]
 
 
@@ -57,9 +59,9 @@ Numeric = Union[int, float]
 
 StringOrNumber = Union[Numeric, str]
 
-QueryArgument = Dict[str, Union[str, Numeric]]
+QueryArgument = Union[str, Numeric]
 
-QueryArguments = Tuple[QueryArgument]
+QueryArguments = List[QueryArgument]
 
 
 QueryResponseType = Union[
@@ -77,9 +79,13 @@ APIHandlerType = Callable[[HttpRequest, str, str], Awaitable[Tuple[HTTPStatus, d
 APIFunctionType = Callable[[HttpRequest, str], HttpResponse]
 
 
+ResponseStructure = Union[Dict[str, str], List[str]]
+
+
 class Transformer(NamedTuple):
-    value_fn: Callable[[str], str]
+    value_fn: Callable[[str], Union[str, datetime, date]]
     param_fn: Union[Callable[[str], str], str.format]
+    input_argument: Callable[[str], str]
 
 
 class ApiResponse(NamedTuple):
@@ -91,3 +97,4 @@ class ApiResponse(NamedTuple):
 class QueryData(NamedTuple):
     arguments: QueryArguments
     query: Any
+    area_type: str

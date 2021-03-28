@@ -95,7 +95,12 @@ def format_response(func: APIHandlerType) -> APIFunctionType:
     """
     @wraps(func)
     async def inner(req: HttpRequest, lastUpdateTimestamp: str, *args, **kwargs) -> HttpResponse:
-        code, response, raw_query, formatter = await func(req, lastUpdateTimestamp, *args, **kwargs)
+        code, response, raw_query, formatter = await func(
+            req,
+            lastUpdateTimestamp,
+            *args,
+            **kwargs
+        )
 
         if len(lastUpdateTimestamp.split('.')[-1].strip("Z")) == 7:
             lastUpdateTimestamp = lastUpdateTimestamp.replace("0Z", "").replace("5Z", "") + "Z"
@@ -130,7 +135,7 @@ def format_response(func: APIHandlerType) -> APIFunctionType:
 
         if req.method == "HEAD":
             return HttpResponse(
-                status_code=204 if code < 400 else int(code),
+                status_code=200 if code < 204 else int(code),
                 headers=headers
             )
 

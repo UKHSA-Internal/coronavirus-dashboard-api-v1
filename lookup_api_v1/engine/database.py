@@ -81,9 +81,8 @@ def process_head(filters: str, ordering: OrderingType,
     return list()
 
 
-def process_get(request: HttpRequest, filters: str, ordering: OrderingType,
-                tokens: QueryParser, arguments: QueryArguments, structure: str,
-                formatter: str, max_items: int) -> QueryResponseType:
+def process_get(filters: str, ordering: OrderingType, arguments: QueryArguments,
+                structure: str, formatter: str) -> QueryResponseType:
 
     ordering_script = format_ordering(ordering)
 
@@ -95,26 +94,16 @@ def process_get(request: HttpRequest, filters: str, ordering: OrderingType,
 
     logging.info(f">>>> DB Query: {query}")
     logging.info(f"Query arguments: {arguments}")
-    page_number = None
 
     items = container.query_items(
         query=query,
         parameters=arguments,
         partition_key='general',
-        max_item_count=1000
+        max_item_count=2000
     )
 
-    if tokens.page_number is not None:
-        page_number = int(tokens.page_number)
-
     try:
-        query_hash = blake2b(query.encode(), digest_size=32).hexdigest()
-        paginated_items = list(items.by_page(query_hash))
-
-        if page_number is not None:
-            results = list(paginated_items[page_number - 1])
-        else:
-            results = list(paginated_items[0])
+        results = list(items)
     except (KeyError, IndexError, StopIteration):
         raise NotAvailable()
 
@@ -123,30 +112,9 @@ def process_get(request: HttpRequest, filters: str, ordering: OrderingType,
     if formatter != 'csv':
         response = {
             'length': len(results),
-            'maxPageLimit': max_items,
             'data': results
         }
 
-        if page_number is not None:
-            total_pages = len(paginated_items)
-            prepped_url = instance_settings.PAGINATION_PATTERN.sub("", request.url)
-            parsed_url = urlparse(prepped_url)
-            url = f"/v1/data?{parsed_url.query}".strip("&")
-            response.update({
-                "pagination": {
-                    'current': f"{url}&page={page_number}",
-                    'next': (
-                        f"{url}&page={page_number + 1}"
-                        if page_number < total_pages else None
-                    ),
-                    'previous': (
-                        f"{url}&page={page_number - 1}"
-                        if (page_number - 1) > 0 else None
-                    ),
-                    'first': f"{url}&page=1",
-                    'last': f"{url}&page={total_pages}"
-                }
-            })
         return response
 
     if not len(results):
@@ -190,11 +158,8 @@ def get_data(request: HttpRequest, tokens: QueryParser, ordering: OrderingType,
     extra_queries = get_assurance_query(structure)
     filters += extra_queries
 
-    max_items = instance_settings.MAX_ITEMS_PER_RESPONSE
-
     if request.method == "HEAD":
         return process_head(filters, ordering, arguments)
 
     elif request.method == "GET":
-        return process_get(request, filters, ordering, tokens, arguments,
-                           structure, formatter, max_items=max_items)
+        return process_get(filters, ordering, arguments, structure, formatter)

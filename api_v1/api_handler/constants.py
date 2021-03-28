@@ -170,58 +170,116 @@ AREA_TYPES = {
 STRING_TRANSFORMATION = {
     'areaName': Transformer(
         value_fn=str.lower,
-        param_fn=lambda n: n.replace("areaName", "areaNameLower")
+        param_fn=lambda n: n.replace("areaName", "LOWER(area_name)"),
+        input_argument=lambda a: a
     ),
     'areaType': Transformer(
         value_fn=lambda x: AREA_TYPES[str.lower(x)],
-        param_fn=str
+        param_fn=lambda n: n.replace("areaType", "area_type"),
+        input_argument=lambda a: a
     ),
     'date': Transformer(
-        value_fn=lambda x: x.split("T")[0],
-        param_fn=str
+        value_fn=lambda x: datetime.strptime(x.split("T")[0], "%Y-%m-%d").date(),
+        param_fn=str,
+        input_argument="DATE({})".format
     ),
-    'areaCode': Transformer(value_fn=str.upper, param_fn=str),
-    'DEFAULT': Transformer(value_fn=lambda x: x, param_fn=lambda x: x)
+    'areaCode': Transformer(
+        value_fn=str.upper,
+        param_fn=lambda n: n.replace("areaCode", "area_code"),
+        input_argument=lambda a: a
+    ),
+    'DEFAULT': Transformer(
+        value_fn=lambda x: x,
+        param_fn=lambda x: x,
+        input_argument=lambda a: a
+    )
 }
 
 
 class DBQueries(NamedTuple):
     # noinspection SqlResolve,SqlNoDataSourceInspection
     data_query = Template("""\
-SELECT  VALUE $template 
-FROM    c 
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script 
-$ordering
-""".replace("\n", " "))
+SELECT
+    area_code             AS "areaCode",
+    ref.area_type         AS "areaType",
+    area_name             AS "areaName",
+    date::VARCHAR         AS date,
+    metric,
+    CASE
+        WHEN (payload ? 'value') THEN (payload -> 'value')
+        ELSE payload::JSONB
+    END AS value
+FROM covid19.time_series_p${partition} AS ts
+JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+JOIN covid19.release_reference AS rr  ON rr.id = release_id
+JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters
+ORDER BY area_code, date DESC
+LIMIT $limit OFFSET $offset
+""")
 
     # Query assumes that the data is ordered (descending) by date.
     # noinspection SqlResolve,SqlNoDataSourceInspection
-    latest_date_for_metric = Template(f"""\
-SELECT  TOP 1 (c.{ DATE_PARAM_NAME })
-FROM    c
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script
-        AND IS_DEFINED(c.$latest_by)
-$ordering
-""".replace("\n", " "))
+    latest_date_for_metric = Template("""\
+SELECT
+    area_code             AS "areaCode",
+    ref.area_type         AS "areaType",
+    area_name             AS "areaName",
+    date::VARCHAR         AS date,
+    metric,
+    CASE
+        WHEN (payload ? 'value') THEN (payload -> 'value')
+        ELSE payload::JSONB
+    END AS value
+FROM covid19.time_series_p${partition} AS ts
+    JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+    JOIN covid19.release_reference AS rr  ON rr.id = release_id
+    JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters
+  AND date = (
+      SELECT MAX(date)
+      FROM covid19.time_series_p${partition} AS ts
+          JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+          JOIN covid19.release_reference AS rr  ON rr.id = release_id
+          JOIN covid19.area_reference    AS ref ON ref.id = area_id
+      WHERE
+            rr.released IS TRUE
+        AND metric = '$latest_by'
+        AND (payload ->> 'value') NOTNULL
+        $filters
+  )
+ORDER BY area_code, date DESC""")
 
     # noinspection SqlResolve,SqlNoDataSourceInspection
     exists = Template("""\
-SELECT  TOP 1 VALUE (1)
-FROM    c 
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script 
-$ordering
-    """.replace("\n", " "))
+SELECT TRUE AS exists
+FROM covid19.time_series_p${partition} AS ts
+    JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+    JOIN covid19.release_reference AS rr  ON rr.id = release_id
+    JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters
+OFFSET $offset
+FETCH FIRST 1 ROW ONLY""")
 
     count = Template("""\
-SELECT  VALUE COUNT(1)
-FROM    c 
-WHERE   c.seriesDate = @seriesDate
-        AND $clause_script 
-$ordering
-    """.replace("\n", " "))
+SELECT COUNT(*) AS count
+FROM covid19.time_series_p${partition} AS ts
+    JOIN covid19.metric_reference  AS mr  ON mr.id = metric_id
+    JOIN covid19.release_reference AS rr  ON rr.id = release_id
+    JOIN covid19.area_reference    AS ref ON ref.id = area_id
+WHERE
+      metric = ANY($$1::VARCHAR[])
+  AND rr.released IS TRUE
+  $filters""")
 
 
 DATA_TYPES: Dict[str, Callable[[str], Any]] = {
@@ -393,18 +451,12 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "weeklyPeopleVaccinatedSecondDoseByVaccinationDate": int,
     "cumPeopleVaccinatedSecondDoseByVaccinationDate": int,
 
-    'newCasesPCROnlyBySpecimenDateRollingSum': int,
-    'newCasesLFDOnlyBySpecimenDateRollingRate': float,
-    'newCasesLFDOnlyBySpecimenDate': int,
-    'newCasesLFDConfirmedPCRBySpecimenDate': int,
-    'newCasesLFDConfirmedPCRBySpecimenDateRollingRate': float,
-    'cumCasesPCROnlyBySpecimenDate': int,
-    'newCasesPCROnlyBySpecimenDateRollingRate': float,
-    'newCasesLFDOnlyBySpecimenDateRollingSum': int,
-    'cumCasesLFDConfirmedPCRBySpecimenDate': int,
-    'cumCasesLFDOnlyBySpecimenDate': int,
-    'newCasesPCROnlyBySpecimenDate': int,
-    'newCasesLFDConfirmedPCRBySpecimenDateRollingSum': int,
+    "cumVaccinationFirstDoseUptakeByPublishDatePercentage": float,
+    "cumVaccinationSecondDoseUptakeByPublishDatePercentage": float,
+    "cumVaccinationCompleteCoverageByPublishDatePercentage": float,
+
+    "newVaccinesGivenByPublishDate": int,
+    "cumVaccinesGivenByPublishDate": int,
 }
 
 
@@ -671,4 +723,11 @@ if ENVIRONMENT == "DEVELOPMENT":
         'cumCasesLFDOnlyBySpecimenDate': int,
         'newCasesPCROnlyBySpecimenDate': int,
         'newCasesLFDConfirmedPCRBySpecimenDateRollingSum': int,
+
+        "cumVaccinationFirstDoseUptakeByPublishDatePercentage": float,
+        "cumVaccinationSecondDoseUptakeByPublishDatePercentage": float,
+        "cumVaccinationCompleteCoverageByPublishDatePercentage": float,
+
+        "newVaccinesGivenByPublishDate": int,
+        "cumVaccinesGivenByPublishDate": int,
     }
