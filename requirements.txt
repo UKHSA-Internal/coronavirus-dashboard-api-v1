@@ -6,7 +6,7 @@ cryptography==3.4.6
 chardet==4.0.0
 idna
 azure-core==1.11.0
-azure-common==1.1.26
+azure-common==1.1.27
 azure-nspkg==3.0.2
 azure-functions==1.6.0
 azure-storage-common==2.1.0
