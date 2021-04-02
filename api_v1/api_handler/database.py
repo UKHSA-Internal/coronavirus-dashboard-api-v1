@@ -351,7 +351,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         df
         .pivot_table(values="value", index=base_metrics, columns="metric", aggfunc='first')
         .reset_index()
-        .sort_values(["date", "areaCode"], ascending=[False, True])
+        .sort_values(["areaCode", "date"], ascending=[True, False])
         .pipe(format_dtypes, column_types=column_types)
         .loc[:, [*base_metrics, *response_metrics]]
         .pipe(format_data, response_metrics=response_metrics)
