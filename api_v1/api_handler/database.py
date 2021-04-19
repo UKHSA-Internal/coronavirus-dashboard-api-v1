@@ -5,7 +5,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Python:
 import logging
-from json import dumps, loads
 from os import getenv
 from urllib.parse import urlparse
 from dataclasses import dataclass
@@ -15,6 +14,8 @@ from datetime import datetime, date
 
 # 3rd party:
 import asyncpg
+
+from orjson import dumps, loads
 
 from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
@@ -46,7 +47,7 @@ __all__ = [
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
 PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",") or None
 
-base_metrics = ["areaType", "areaCode", "areaName", "date"]
+base_metrics = ["areaCode", "areaType", "areaName", "date"]
 single_partition_types = {"utla", "ltla", "nhstrust", "msoa"}
 
 dtypes = DATA_TYPES.copy()
@@ -113,7 +114,7 @@ def log_response(query, arguments):
             request_round=count
         )
 
-        logging.info(f"DB QUERY: { dumps(custom_dims, separators=(',', ':')) }")
+        logging.info(f"DB QUERY: { dumps(custom_dims) }")
 
     return process
 
@@ -192,9 +193,9 @@ def set_column_labels(df: DataFrame, structure: ResponseStructure):
 
 
 def format_response(df: DataFrame, request: HttpRequest, response_type: str,
-                    count: int, page_number: int, n_metrics: int) -> str:
+                    count: int, page_number: int, n_metrics: int) -> bytes:
     if response_type == 'csv':
-        return df.to_csv(float_format="%.20g", index=False)
+        return df.to_csv(float_format="%.20g", index=False).encode()
 
     total_pages = int(ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics)))
     prepped_url = PAGINATION_PATTERN.sub("", request.url)
@@ -218,7 +219,7 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
         }
     }
 
-    return dumps(payload, separators=(",", ":"), default=json_formatter)
+    return dumps(payload, default=json_formatter)
 
 
 @lru_cache(32)
@@ -267,7 +268,11 @@ def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     json_columns = json_dtypes.intersection(column_types)
 
     df = df.replace('null', None)
-    df.loc[:, json_columns] = df.loc[:, json_columns].apply(lambda column: column.map(loads))
+    df.loc[:, json_columns] = (
+        df
+        .loc[:, json_columns]
+        .apply(lambda column: column.map(loads))
+    )
 
     return df.astype(column_types)
 
