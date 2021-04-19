@@ -284,7 +284,7 @@ WHERE
 DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     'hash': str,
     'areaType': str,
-    DATE_PARAM_NAME: datetime,
+    'date': datetime,
     'areaName': str,
     'areaNameLower': str,
     'areaCode': str,
@@ -320,7 +320,7 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "cumCasesBySpecimenDateRate": float,
     'cumCasesByPublishDateRate': float,
 
-    REPORT_DATE_PARAM_NAME: datetime,
+    'release': datetime,
 
     "newDeathsByDeathDate": int,
     "newDeathsByDeathDateRate": float,
@@ -449,13 +449,25 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "weeklyPeopleVaccinatedFirstDoseByVaccinationDate": int,
     "weeklyPeopleVaccinatedSecondDoseByVaccinationDate": int,
     "cumPeopleVaccinatedSecondDoseByVaccinationDate": int,
+    'newCasesLFDConfirmedPCRBySpecimenDateRollingSum': int,
+    'newCasesLFDConfirmedPCRBySpecimenDate': int,
+    'newCasesLFDConfirmedPCRBySpecimenDateRollingRate': float,
+
+    'cumCasesLFDOnlyBySpecimenDate': int,
+    'cumCasesPCROnlyBySpecimenDate': int,
+    'newCasesPCROnlyBySpecimenDateRollingSum': int,
+    'newCasesLFDOnlyBySpecimenDateRollingRate': float,
+    'newCasesPCROnlyBySpecimenDateRollingRate': float,
+    'newCasesLFDOnlyBySpecimenDateRollingSum': int,
+    'cumCasesLFDConfirmedPCRBySpecimenDate': int,
+    'newCasesPCROnlyBySpecimenDate': int,
+    'newCasesLFDOnlyBySpecimenDate': int,
+    'newVaccinesGivenByPublishDate': int,
+    'cumVaccinesGivenByPublishDate': int,
 
     "cumVaccinationFirstDoseUptakeByPublishDatePercentage": float,
     "cumVaccinationSecondDoseUptakeByPublishDatePercentage": float,
     "cumVaccinationCompleteCoverageByPublishDatePercentage": float,
-
-    "newVaccinesGivenByPublishDate": int,
-    "cumVaccinesGivenByPublishDate": int,
 }
 
 
