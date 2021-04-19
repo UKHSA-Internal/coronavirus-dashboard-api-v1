@@ -111,7 +111,7 @@ def format_response(func: APIHandlerType) -> APIFunctionType:
 
         # ToDo: This may be performed in APIM.
         # gzipped_data = data.encode()  # compress(data.encode())
-        gzipped_data = compress(data.encode())
+        gzipped_data = compress(data)
 
         timestamp = datetime.strptime(lastUpdateTimestamp, "%Y-%m-%dT%H:%M:%S.%fZ")
 
