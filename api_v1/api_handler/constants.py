@@ -251,7 +251,6 @@ WHERE
       WHERE
             rr.released IS TRUE
         AND metric = '$latest_by'
-        AND (payload ->> 'value') NOTNULL
         $filters
   )
 ORDER BY area_code, date DESC""")
