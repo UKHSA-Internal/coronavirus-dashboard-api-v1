@@ -155,11 +155,16 @@ async def get_count(conn, db_args: Iterable[Any], partition_id: str, filters: st
 
 def format_data(df: DataFrame, response_metrics: Iterable[str]) -> DataFrame:
     int_response_metrics = set(response_metrics).intersection(integer_dtypes)
-    df.loc[:, int_response_metrics] = df.loc[:, int_response_metrics].astype(object)
+    df.loc[:, int_response_metrics] = df[int_response_metrics].astype(object)
 
     for col in int_response_metrics:
         notnull = df[col].notnull()
-        df.loc[notnull, col] = df.loc[notnull, col].astype(int)
+        df.loc[notnull, col] = (
+           df
+           .loc[notnull, col]
+           .str.replace(".0+$", "", regex=True)
+           .astype(int)
+        )
 
     df = df.where(df.notnull(), None)
 
