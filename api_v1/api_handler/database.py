@@ -286,9 +286,6 @@ def to_json(data) -> Union[dict, list]:
 def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     json_columns = json_dtypes.intersection(column_types)
 
-    if not len(json_columns):
-        return df
-
     df = df.replace('null', None)
     df.loc[:, json_columns] = (
         df
@@ -392,7 +389,5 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
             n_metrics=n_metrics
         )
     )
-
-    print(df.head().to_string())
 
     return payload
