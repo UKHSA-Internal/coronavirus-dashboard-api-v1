@@ -15,7 +15,7 @@ from datetime import datetime, date
 # 3rd party:
 import asyncpg
 
-from orjson import dumps, loads
+from orjson import dumps, loads, JSONDecodeError
 
 from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
@@ -264,6 +264,13 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
     return query
 
 
+def to_json(data) -> Union[dict, list]:
+    try:
+        return loads(data)
+    except JSONDecodeError():
+        return list()
+
+
 def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     json_columns = json_dtypes.intersection(column_types)
 
@@ -271,7 +278,7 @@ def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     df.loc[:, json_columns] = (
         df
         .loc[:, json_columns]
-        .apply(lambda column: column.map(loads))
+        .apply(lambda column: column.map(to_json))
     )
 
     return df.astype(column_types)
@@ -370,5 +377,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
             n_metrics=n_metrics
         )
     )
+
+    print(df.head().to_string())
 
     return payload
