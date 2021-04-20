@@ -24,10 +24,8 @@ from http import HTTPStatus
 from azure.functions import HttpRequest, HttpResponse
 
 # Internal:
-from .api_handler import (
-    APIException, DEFAULT_ORDERING,
-    QueryParser, get_data, format_response
-)
+from .api_handler import APIException, QueryParser, get_data, format_response
+from .api_handler.exceptions import BadPagination, InvalidFormat, MissingFilter
 
 try:
     from __app__.storage import StorageClient
@@ -72,11 +70,22 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
     query = unquote_plus(url.query)
     logging.info(query)
 
+    page = req.params.get("page")
+    latest_by = req.params.get("latestBy")
     formatter = 'json'
 
     try:
         tokens = QueryParser(query, lastUpdateTimestamp)
         formatter = await tokens.formatter
+
+        if page is not None and latest_by is not None:
+            raise BadPagination()
+
+        if latest_by is not None and formatter != "json":
+            raise InvalidFormat()
+
+        if "areaType" not in query:
+            raise MissingFilter()
 
         logging.debug(tokens)
 
