@@ -222,14 +222,18 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
         'maxPageLimit': MAX_ITEMS_PER_RESPONSE,
         'totalRecords': count,
         "data": df.to_dict("records"),
-        "pagination": {
-            'current': f"{url}&page={page_number}",
-            'next': f"{url}&page={page_number + 1}" if page_number < total_pages else None,
-            'previous': f"{url}&page={page_number - 1}" if (page_number - 1) > 0 else None,
-            'first': f"{url}&page=1",
-            'last': f"{url}&page={total_pages}"
-        }
     }
+
+    if request.params.get("latestBy") is None:
+        payload.update({
+            "pagination": {
+                'current': f"{url}&page={page_number}",
+                'next': f"{url}&page={page_number + 1}" if page_number < total_pages else None,
+                'previous': f"{url}&page={page_number - 1}" if (page_number - 1) > 0 else None,
+                'first': f"{url}&page=1",
+                'last': f"{url}&page={total_pages}"
+            }
+        })
 
     return dumps(payload, default=json_formatter)
 
