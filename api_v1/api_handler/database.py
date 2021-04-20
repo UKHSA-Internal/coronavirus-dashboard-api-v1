@@ -267,12 +267,15 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
 def to_json(data) -> Union[dict, list]:
     try:
         return loads(data)
-    except JSONDecodeError():
+    except JSONDecodeError:
         return list()
 
 
 def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     json_columns = json_dtypes.intersection(column_types)
+
+    if not len(json_columns):
+        return df
 
     df = df.replace('null', None)
     df.loc[:, json_columns] = (
