@@ -159,12 +159,19 @@ def format_data(df: DataFrame, response_metrics: Iterable[str]) -> DataFrame:
 
     for col in int_response_metrics:
         notnull = df[col].notnull()
-        df.loc[notnull, col] = (
-           df
-           .loc[notnull, col]
-           .str.replace(".0+$", "", regex=True)
-           .astype(int)
-        )
+        try:
+            df.loc[notnull, col] = (
+               df
+               .loc[notnull, col]
+               .str.replace(".0+$", "", regex=True)
+               .astype(int)
+            )
+        except AttributeError:
+            df.loc[notnull, col] = (
+               df
+               .loc[notnull, col]
+               .astype(int)
+            )
 
     df = df.where(df.notnull(), None)
 
