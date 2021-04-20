@@ -47,7 +47,10 @@ __all__ = [
     'RequestTooLarge',
     'NotAvailable',
     "UnauthorisedRequest",
-    "StructureTooLarge"
+    "StructureTooLarge",
+    "InvalidFormat",
+    "BadPagination",
+    "MissingFilter"
 ]
 
 
@@ -221,3 +224,25 @@ class UnauthorisedRequest(APIException):
         "is denied."
     )
     code = HTTPStatus.UNAUTHORIZED
+
+
+class InvalidFormat(APIException):
+    message = (
+        "Invalid format: 'latestBy' parameter can only be used when 'format=json'."
+    )
+    code = HTTPStatus.BAD_REQUEST
+
+
+class BadPagination(APIException):
+    message = (
+        "Bad pagination: 'latestBy' parameter cannot be used in conjunction with "
+        "the 'page' parameter."
+    )
+    code = HTTPStatus.BAD_REQUEST
+
+
+class MissingFilter(APIException):
+    message = (
+        "Missing filter: The 'areaType' filter is mandatory, but not defined."
+    )
+    code = HTTPStatus.BAD_REQUEST
