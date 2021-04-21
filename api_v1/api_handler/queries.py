@@ -6,8 +6,8 @@
 from datetime import datetime
 import re
 from hashlib import blake2b
-from typing import Tuple, Union, Awaitable
-from json import loads, JSONDecodeError
+from typing import Tuple, Union, Awaitable, List
+from json import JSONDecodeError
 from urllib.parse import unquote_plus, unquote
 
 # 3rd party:
@@ -180,6 +180,7 @@ class QueryParser:
         self.last_update = last_update
         self.structure: Awaitable[str] = self.extract_structure()
         self.formatter: Awaitable[str] = self.extract_formatter()
+        self.raw_filters: List[dict] = list()
         self.only_latest_by: str = self.extract_latest_filter()
         self.query_data = self.extract_content()
         self.page_number = self.get_page_number()
@@ -282,6 +283,12 @@ class QueryParser:
             if (RESTRICTED_PARAMETER_VALUES.get(name) is not None and
                     value.lower() not in RESTRICTED_PARAMETER_VALUES.get(name, [])):
                 raise UnauthorisedRequest(name=name, operator=operator, value=value)
+
+            self.raw_filters.append({
+                "identifier": name,
+                "operator": operator,
+                "value": value
+            })
 
             value = convert_value_type(name, operator, value)
             param_name = transformer.param_fn(name)
