@@ -6,7 +6,7 @@
 # Python:
 import logging
 from os import getenv
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote_plus
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import Awaitable, Union, Iterable, Any, Dict
@@ -205,14 +205,15 @@ def set_column_labels(df: DataFrame, structure: ResponseStructure):
 
 
 def format_response(df: DataFrame, request: HttpRequest, response_type: str,
-                    count: int, page_number: int, n_metrics: int) -> bytes:
+                    count: int, page_number: int, n_metrics: int, structure: dict,
+                    raw_filters: list) -> bytes:
     if response_type == 'csv':
         return df.to_csv(float_format="%.20g", index=False).encode()
 
     total_pages = int(ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics)))
     prepped_url = PAGINATION_PATTERN.sub("", request.url)
     parsed_url = urlparse(prepped_url)
-    url = f"/v1/data?{parsed_url.query}".strip("&")
+    url = unquote_plus(f"/v1/data?{parsed_url.query}".strip("&"))
 
     if "latestBy" in prepped_url:
         count = df.shape[0]
@@ -221,10 +222,14 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
         'length': df.shape[0],
         'maxPageLimit': MAX_ITEMS_PER_RESPONSE,
         'totalRecords': count,
-        "data": df.to_dict("records"),
+        'data': df.to_dict("records"),
+        'requestPayload': {
+            'structure': structure,
+            'filters': raw_filters
+        }
     }
 
-    if request.params.get("latestBy") is None:
+    if (latest_by := request.params.get("latestBy")) is None:
         payload.update({
             "pagination": {
                 'current': f"{url}&page={page_number}",
@@ -234,6 +239,9 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
                 'last': f"{url}&page={total_pages}"
             }
         })
+        payload['requestPayload']['page'] = page_number
+    else:
+        payload['requestPayload']['latestBy'] = latest_by
 
     return dumps(payload, default=json_formatter)
 
@@ -306,6 +314,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
     arguments = query_data.arguments
     filters = query_data.query
     structure = await tokens.structure
+    raw_filters = tokens.raw_filters
 
     if isinstance(structure, dict):
         metrics = list(structure.values())
@@ -390,7 +399,9 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
             response_type=formatter,
             count=count,
             page_number=page_number,
-            n_metrics=n_metrics
+            n_metrics=n_metrics,
+            structure=structure,
+            raw_filters=raw_filters
         )
     )
 
