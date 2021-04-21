@@ -82,7 +82,7 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
         if page is not None and latest_by is not None:
             raise BadPagination()
 
-        if latest_by is not None and formatter != "json":
+        if latest_by is not None and formatter not in ["json", "xml"]:
             raise InvalidFormat()
 
         if "areaType" not in query:

@@ -228,7 +228,8 @@ class UnauthorisedRequest(APIException):
 
 class InvalidFormat(APIException):
     message = (
-        "Invalid format: 'latestBy' parameter can only be used when 'format=json'."
+        "Invalid format: 'latestBy' parameter can only be used "
+        "when 'format=json' or 'format=xml'."
     )
     code = HTTPStatus.BAD_REQUEST
 
