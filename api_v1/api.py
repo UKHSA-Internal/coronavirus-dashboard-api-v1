@@ -70,8 +70,9 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
     query = unquote_plus(url.query)
     logging.info(query)
 
-    page = req.params.get("page")
-    latest_by = req.params.get("latestBy")
+    page = req.params.get("page", None)
+    latest_by = req.params.get("latestBy", None)
+
     formatter = 'json'
 
     try:
