@@ -15,6 +15,7 @@ Contributors:  Pouria Hadjibagheri
 # Imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Python:
+import logging
 from json import loads
 import re
 
@@ -61,9 +62,12 @@ async def format_structure(struct: str) -> StructureType:
         Formatted response structure ready to be used in the database query.
     """
     struct_json = loads(struct)
-    pattern = re.compile(r'(?P<db_name>[a-z2860]{2,75})', re.IGNORECASE)
 
-    import logging
+    if isinstance(struct_json, dict) and \
+            any(isinstance(value, (list, dict)) for value in struct_json.values()):
+        raise InvalidStructure()
+
+    pattern = re.compile(r'(?P<db_name>[a-z2860]{2,75})', re.IGNORECASE)
 
     logging.info(set(struct_json) - metric_names)
 
