@@ -71,16 +71,16 @@ json_dtypes = {type_ for type_, base_type in dtypes.items() if base_type in [lis
 logger = logging.getLogger('azure')
 logger.setLevel(logging.WARNING)
 
-DB_KWS = dict(
-    url=DatabaseCredentials.host,
-    credential={'masterKey': DatabaseCredentials.key},
-    preferred_locations=PREFERRED_LOCATIONS,
-    connection_timeout=10000
-)
-
-client = CosmosClient(**DB_KWS)
-db = client.get_database_client(DatabaseCredentials.db_name)
-container = db.get_container_client(DatabaseCredentials.data_collection)
+# DB_KWS = dict(
+#     url=DatabaseCredentials.host,
+#     credential={'masterKey': DatabaseCredentials.key},
+#     preferred_locations=PREFERRED_LOCATIONS,
+#     connection_timeout=10000
+# )
+#
+# client = CosmosClient(**DB_KWS)
+# db = client.get_database_client(DatabaseCredentials.db_name)
+# container = db.get_container_client(DatabaseCredentials.data_collection)
 
 
 def json_formatter(obj):
