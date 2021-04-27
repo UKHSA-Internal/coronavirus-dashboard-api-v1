@@ -23,7 +23,7 @@ __all__ = [
 class Connection:
     def __init__(self, conn_str=getenv("POSTGRES_CONNECTION_STRING")):
         self.conn_str = conn_str
-        self._connection = asyncpg.connect(self.conn_str)
+        self._connection = asyncpg.connect(self.conn_str, statement_cache_size=0, timeout=60)
 
     def __await__(self):
         yield from self._connection.__await__()
