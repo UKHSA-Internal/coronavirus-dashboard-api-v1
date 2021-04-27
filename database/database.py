@@ -44,7 +44,8 @@ class CosmosDB:
 
         self.cosmos_client = CosmosClient(
             url=DB_URL,
-            credential=credentials
+            credential=credentials,
+            preferred_locations="UK South"
         )
         self.db_client: DatabaseProxy = self.cosmos_client.get_database_client(DB_NAME)
         self.client: ContainerProxy = self.db_client.get_container_client(collection.value)

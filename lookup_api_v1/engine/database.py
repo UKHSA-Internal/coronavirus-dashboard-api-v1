@@ -41,7 +41,7 @@ PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")
 DB_KWS = dict(
     url=instance_settings.DatabaseCredentials.host,
     credential={'masterKey': instance_settings.DatabaseCredentials.key},
-    preferred_locations=PREFERRED_LOCATIONS
+    preferred_locations="UK South"
 )
 
 
