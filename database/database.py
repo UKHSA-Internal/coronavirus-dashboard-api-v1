@@ -32,7 +32,7 @@ DB_CREDENTIALS = {
     "masterKey": getenv("AzureCosmosKey")
 }
 DB_NAME = getenv("AzureCosmosDBName")
-PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")[0]
+# PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")[0]
 
 
 class CosmosDB:
@@ -44,8 +44,7 @@ class CosmosDB:
 
         self.cosmos_client = CosmosClient(
             url=DB_URL,
-            credential=credentials,
-            preferred_locations=PREFERRED_LOCATIONS
+            credential=credentials
         )
         self.db_client: DatabaseProxy = self.cosmos_client.get_database_client(DB_NAME)
         self.client: ContainerProxy = self.db_client.get_container_client(collection.value)
