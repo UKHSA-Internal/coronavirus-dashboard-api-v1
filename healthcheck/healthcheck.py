@@ -11,11 +11,7 @@ from os import getenv
 from azure.functions import HttpRequest, HttpResponse
 import asyncpg
 
-# Internal: 
-# try:
-#     from __app__.database import CosmosDB, Collection
-# except ImportError:
-#     from database import CosmosDB, Collection
+# Internal:
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -39,17 +35,7 @@ class Connection:
         return self._connection.close()
 
 
-# QUERY = """\
-# SELECT TOP 1 *
-# FROM c
-# WHERE c.type = 'general'\
-# """
-#
-#
-# db_client = CosmosDB(Collection.LOOKUP)
-
-
-def probe(req: HttpRequest) -> HttpResponse:
+async def probe(req: HttpRequest) -> HttpResponse:
     logging.info("Processing healthcheck request")
     try:
         async with Connection() as conn:
