@@ -32,7 +32,7 @@ DB_CREDENTIALS = {
     "masterKey": getenv("AzureCosmosKey")
 }
 DB_NAME = getenv("AzureCosmosDBName")
-PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")
+PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")[0]
 
 
 class CosmosDB:
