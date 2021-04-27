@@ -5,15 +5,17 @@
 # Python:
 import logging
 from http import HTTPStatus
+from os import getenv
 
 # 3rd party:
 from azure.functions import HttpRequest, HttpResponse
+import asyncpg
 
 # Internal: 
-try:
-    from __app__.database import CosmosDB, Collection
-except ImportError:
-    from database import CosmosDB, Collection
+# try:
+#     from __app__.database import CosmosDB, Collection
+# except ImportError:
+#     from database import CosmosDB, Collection
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -22,22 +24,39 @@ __all__ = [
 ]
 
 
-QUERY = """\
-SELECT TOP 1 *
-FROM c 
-WHERE c.type = 'general'\
-"""
+class Connection:
+    def __init__(self, conn_str=getenv("POSTGRES_CONNECTION_STRING")):
+        self.conn_str = conn_str
+        self._connection = asyncpg.connect(self.conn_str)
+
+    def __await__(self):
+        yield from self._connection.__await__()
+
+    def __aenter__(self):
+        return self._connection
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return self._connection.close()
 
 
-db_client = CosmosDB(Collection.LOOKUP)
+# QUERY = """\
+# SELECT TOP 1 *
+# FROM c
+# WHERE c.type = 'general'\
+# """
+#
+#
+# db_client = CosmosDB(Collection.LOOKUP)
 
 
 def probe(req: HttpRequest) -> HttpResponse:
     logging.info("Processing healthcheck request")
     try:
-        result = db_client.query(QUERY, params=list()).pop()
+        async with Connection() as conn:
+            result = await conn.fetchrow("SELECT 1 AS healthcheck")
+        # result = db_client.query(QUERY, params=list()).pop()
 
-        if len(result) > 0:
+        if result.get("healthcheck", None) is not None:
             if req.method == "GET":
                 return HttpResponse("ALIVE", status_code=HTTPStatus.OK.real)
 
