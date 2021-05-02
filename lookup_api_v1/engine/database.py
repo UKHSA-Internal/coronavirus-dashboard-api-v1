@@ -35,7 +35,7 @@ __all__ = [
 
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
 
-PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",")
+PREFERRED_LOCATIONS = "UK South"
 
 
 DB_KWS = dict(
