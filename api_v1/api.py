@@ -100,12 +100,19 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
         return HTTPStatus.OK, response, url.query, formatter
 
     except APIException as err:
+        code = 400 if 400 <= err.code.real < 500 else err.code.real
+
+        if code == 400:
+            phrase = "Bad request"
+        else:
+            phrase = getattr(err.code, 'phrase')
+
         response = {
             "response": err.message,
-            "status_code": err.code,
-            "status": getattr(err.code, 'phrase')
+            "status_code": code,
+            "status": phrase
         }
-        return err.code, response, url.query, formatter
+        return code, response, url.query, formatter
 
     except Exception as e:
         # A generic exception may contain sensitive data and must
