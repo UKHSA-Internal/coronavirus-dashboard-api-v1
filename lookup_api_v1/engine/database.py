@@ -35,13 +35,10 @@ __all__ = [
 
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
 
-PREFERRED_LOCATIONS = "UK South"
-
 
 DB_KWS = dict(
     url=instance_settings.DatabaseCredentials.host,
-    credential={'masterKey': instance_settings.DatabaseCredentials.key},
-    preferred_locations="UK South"
+    credential={'masterKey': instance_settings.DatabaseCredentials.key}
 )
 
 
