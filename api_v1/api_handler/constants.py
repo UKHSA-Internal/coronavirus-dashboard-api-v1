@@ -441,7 +441,6 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
 
     "cumPeopleVaccinatedFirstDoseByPublishDate": int,
     "cumPeopleVaccinatedSecondDoseByPublishDate": int,
-    "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
     "newPeopleVaccinatedFirstDoseByPublishDate": int,
     "cumPeopleVaccinatedCompleteByPublishDate": int,
     "newPeopleVaccinatedCompleteByPublishDate": int,
@@ -468,6 +467,16 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "cumVaccinationFirstDoseUptakeByPublishDatePercentage": float,
     "cumVaccinationSecondDoseUptakeByPublishDatePercentage": float,
     "cumVaccinationCompleteCoverageByPublishDatePercentage": float,
+
+    "newPeopleVaccinatedFirstDoseByVaccinationDate": int,
+    "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
+    "cumVaccinationSecondDoseUptakeByVaccinationDatePercentage": float,
+    "VaccineRegisterPopulationByVaccinationDate": int,
+    "newPeopleVaccinatedSecondDoseByVaccinationDate": int,
+    "cumPeopleVaccinatedCompleteByVaccinationDate": int,
+    "cumVaccinationFirstDoseUptakeByVaccinationDatePercentage": float,
+    "cumVaccinationCompleteCoverageByVaccinationDatePercentage": float,
+    "newPeopleVaccinatedCompleteByVaccinationDate": int,
 }
 
 
@@ -713,7 +722,6 @@ if ENVIRONMENT == "DEVELOPMENT":
 
         "cumPeopleVaccinatedFirstDoseByPublishDate": int,
         "cumPeopleVaccinatedSecondDoseByPublishDate": int,
-        "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
         "newPeopleVaccinatedFirstDoseByPublishDate": int,
         "cumPeopleVaccinatedCompleteByPublishDate": int,
         "newPeopleVaccinatedCompleteByPublishDate": int,
@@ -741,4 +749,14 @@ if ENVIRONMENT == "DEVELOPMENT":
 
         "newVaccinesGivenByPublishDate": int,
         "cumVaccinesGivenByPublishDate": int,
+
+        "newPeopleVaccinatedFirstDoseByVaccinationDate": int,
+        "cumPeopleVaccinatedFirstDoseByVaccinationDate": int,
+        "cumVaccinationSecondDoseUptakeByVaccinationDatePercentage": float,
+        "VaccineRegisterPopulationByVaccinationDate": int,
+        "newPeopleVaccinatedSecondDoseByVaccinationDate": int,
+        "cumPeopleVaccinatedCompleteByVaccinationDate": int,
+        "cumVaccinationFirstDoseUptakeByVaccinationDatePercentage": float,
+        "cumVaccinationCompleteCoverageByVaccinationDatePercentage": float,
+        "newPeopleVaccinatedCompleteByVaccinationDate": int,
     }
