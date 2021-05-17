@@ -181,7 +181,7 @@ STRING_TRANSFORMATION = {
     'date': Transformer(
         value_fn=lambda x: datetime.strptime(x.split("T")[0], "%Y-%m-%d").date(),
         param_fn=str,
-        input_argument="DATE({})".format
+        input_argument="{}".format
     ),
     'areaCode': Transformer(
         value_fn=str.upper,
