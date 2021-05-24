@@ -759,4 +759,6 @@ if ENVIRONMENT == "DEVELOPMENT":
         "cumVaccinationFirstDoseUptakeByVaccinationDatePercentage": float,
         "cumVaccinationCompleteCoverageByVaccinationDatePercentage": float,
         "newPeopleVaccinatedCompleteByVaccinationDate": int,
+
+        'vaccinationsAgeDemographics': list,
     }
