@@ -24,10 +24,8 @@ from http import HTTPStatus
 from azure.functions import HttpRequest, HttpResponse
 
 # Internal:
-from .api_handler import (
-    APIException, DEFAULT_ORDERING,
-    QueryParser, get_data, format_response
-)
+from .api_handler import APIException, QueryParser, get_data, format_response
+from .api_handler.exceptions import BadPagination, InvalidFormat, MissingFilter
 
 try:
     from __app__.storage import StorageClient
@@ -69,10 +67,11 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
     """
     url = urlparse(req.url)
 
-    ordering = DEFAULT_ORDERING
-
     query = unquote_plus(url.query)
     logging.info(query)
+
+    page = req.params.get("page", None)
+    latest_by = req.params.get("latestBy", None)
 
     formatter = 'json'
 
@@ -80,26 +79,40 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
         tokens = QueryParser(query, lastUpdateTimestamp)
         formatter = await tokens.formatter
 
+        if page is not None and latest_by is not None:
+            raise BadPagination()
+
+        if latest_by is not None and formatter not in ["json", "xml"]:
+            raise InvalidFormat()
+
+        if "areaType" not in query:
+            raise MissingFilter()
+
         logging.debug(tokens)
 
         response = await get_data(
             req,
             tokens,
-            ordering,
             formatter,
-            lastUpdateTimestamp,
-            seriesDate
+            lastUpdateTimestamp
         )
 
         return HTTPStatus.OK, response, url.query, formatter
 
     except APIException as err:
+        code = 400 if 400 <= err.code.real < 500 else err.code.real
+
+        if code == 400:
+            phrase = "Bad request"
+        else:
+            phrase = getattr(err.code, 'phrase')
+
         response = {
             "response": err.message,
-            "status_code": err.code,
-            "status": getattr(err.code, 'phrase')
+            "status_code": code,
+            "status": phrase
         }
-        return err.code, response, url.query, formatter
+        return code, response, url.query, formatter
 
     except Exception as e:
         # A generic exception may contain sensitive data and must

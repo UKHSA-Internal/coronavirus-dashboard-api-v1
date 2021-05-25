@@ -47,7 +47,10 @@ __all__ = [
     'RequestTooLarge',
     'NotAvailable',
     "UnauthorisedRequest",
-    "StructureTooLarge"
+    "StructureTooLarge",
+    "InvalidFormat",
+    "BadPagination",
+    "MissingFilter"
 ]
 
 
@@ -171,7 +174,7 @@ class ValueNotAcceptable(APIException):
 
 class InvalidStructure(APIException):
     message = (
-        "Invalid structure. The structure must either be a JSON, or an Array object. "
+        "Invalid structure. The structure must be a flat (non-nested) JSON object. "
         "Make sure you use double quotation marks in the structure."
     )
     code = HTTPStatus.EXPECTATION_FAILED
@@ -221,3 +224,26 @@ class UnauthorisedRequest(APIException):
         "is denied."
     )
     code = HTTPStatus.UNAUTHORIZED
+
+
+class InvalidFormat(APIException):
+    message = (
+        "Invalid format: 'latestBy' parameter can only be used "
+        "when 'format=json' or 'format=xml'."
+    )
+    code = HTTPStatus.BAD_REQUEST
+
+
+class BadPagination(APIException):
+    message = (
+        "Bad pagination: 'latestBy' parameter cannot be used in conjunction with "
+        "the 'page' parameter."
+    )
+    code = HTTPStatus.BAD_REQUEST
+
+
+class MissingFilter(APIException):
+    message = (
+        "Missing filter: The 'areaType' filter is mandatory, but not defined."
+    )
+    code = HTTPStatus.BAD_REQUEST

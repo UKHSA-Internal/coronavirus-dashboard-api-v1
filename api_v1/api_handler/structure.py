@@ -15,16 +15,14 @@ Contributors:  Pouria Hadjibagheri
 # Imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Python:
-from string import Template
-from typing import Match, List, Callable
-from json import dumps
-from datetime import datetime
+import logging
+from json import loads
 import re
 
 # 3rd party:
 
 # Internal:
-from .exceptions import InvalidStructureParameter, InvalidStructure
+from .exceptions import InvalidStructure
 from .constants import DATA_TYPES
 from .types import StructureType
 
@@ -36,95 +34,21 @@ __license__ = "MIT"
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 __all__ = [
-    'format_structure',
-    'get_assurance_query'
+    'format_structure'
 ]
 
 
-async def get_formatter(template_format: str) -> Callable[[Match], str]:
-    """
-    Creates a string template for the structure based on ``template_format``.
-
-    The function is a closure to retain the structure for future processing and
-    substitution via regular expressions. It is structured so that it can be
-    used with the RegEx patterns defined in ``format_structure``.
-
-    If ``template_format='JSON'``, the template will be:
-
-        {
-            `new_name`: c.parameter_name,
-            ...
-        }
-
-    If ``template_format='Array'``, the template will be:
-
-        [
-            c.parameter_name,
-            ...
-        ]
-
-    .. note::
-        Values of ``template_format`` are case-sensitive.
-
-    Raises
-    ------
-    InvalidStructure
-        If the template format is invalid - i.e. not one of ``JSON`` or ``Array``.
-
-    InvalidStructureParameter
-        If the requested parameter does is invalid (does not exist in ``DATA_TYPES``).
-
-    Parameters
-    ----------
-    template_format: str
-        Either ``'JSON'`` or ``'Array'``.
-
-    Returns
-    -------
-    Callable[[Match], str]
-    """
-    format_templates = {
-        "JSON": f"'$new_name': $db_name",
-        "Array": f"$db_name"
-    }
-
-    try:
-        template = Template(format_templates[template_format])
-    except KeyError:
-        raise InvalidStructure()
-
-    def format_struct(match: Match) -> str:
-        db_name = match.group('db_name')
-        try:
-            if DATA_TYPES[db_name] is datetime and db_name != 'date':
-                db_name = f"SUBSTRING(c.{db_name}, 0, 10)"
-            else:
-                db_name = f"c.{db_name}"
-
-            params = {
-                **match.groupdict(),
-                'db_name': f"({db_name} ?? null)"
-            }
-
-            return template.substitute(**params)
-
-        except KeyError:
-            raise InvalidStructureParameter(
-                name=match.group('db_name'),
-                structure_format=template_format
-            )
-
-    return format_struct
+metric_names = set(DATA_TYPES)
 
 
-async def format_structure(struct: StructureType) -> str:
+async def format_structure(struct: str) -> StructureType:
     """
     Formats the requested structure and prepares it for use in database
     query.
 
     Parameters
     ----------
-    struct: dict, list
+    struct: str
         Structure the be used in the response.
 
     Raises
@@ -137,50 +61,30 @@ async def format_structure(struct: StructureType) -> str:
     str
         Formatted response structure ready to be used in the database query.
     """
-    struct_json = dumps(struct)
+    struct_json = loads(struct)
 
-    if isinstance(struct, dict):
-        formatter = await get_formatter("JSON")
-        pattern = re.compile(
-            r'"(?P<new_name>[a-z2860]{2,75})":\s*"(?P<db_name>[a-z2860]{2,75})"',
-            re.IGNORECASE
-        )
-    elif isinstance(struct, list):
-        formatter = await get_formatter("Array")
-        pattern = re.compile(r'"(?P<db_name>[a-z2860]{2,75})"', re.IGNORECASE)
+    if isinstance(struct_json, dict) and \
+            any(isinstance(value, (list, dict)) for value in struct_json.values()):
+        raise InvalidStructure()
+
+    pattern = re.compile(r'(?P<db_name>[a-z2860]{2,75})', re.IGNORECASE)
+
+    logging.info(set(struct_json) - metric_names)
+
+    if isinstance(struct_json, list):
+        if len(set(struct_json) - metric_names):
+            raise InvalidStructure()
+        return struct_json
+
+    if isinstance(struct_json, dict):
+        metrics = set(struct_json.values())
+
+        if len(metrics - metric_names):
+            raise InvalidStructure()
+
+        if not all(map(pattern.match, struct_json)):
+            raise InvalidStructure()
     else:
         raise InvalidStructure()
 
-    return pattern.sub(formatter, struct_json)
-
-
-async def get_assurance_query(struct: str) -> str:
-    pattern = re.compile(r'c\.(?P<db_name>[a-z2860_]+)', re.IGNORECASE)
-
-    excluded = {
-        "areaname",
-        "areacode",
-        "date",
-        "areatype",
-        "releasetimestamp",
-        "hash",
-        "areaNameLower",
-    }
-
-    query = list()
-
-    for match in pattern.finditer(struct):
-        metric = match.group("db_name")
-
-        if metric.lower() in excluded:
-            continue
-
-        if DATA_TYPES[metric] is not list:
-            query.append(f'IS_DEFINED(c.{metric}) ')
-            continue
-
-        if DATA_TYPES[metric] is list:
-            query.append(f'ARRAY_LENGTH(c.{metric}) > 0 ')
-
-    query_str = str.join("OR ", query)
-    return f" AND ({query_str})" if query_str else str()
+    return struct_json
