@@ -477,6 +477,8 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "cumVaccinationFirstDoseUptakeByVaccinationDatePercentage": float,
     "cumVaccinationCompleteCoverageByVaccinationDatePercentage": float,
     "newPeopleVaccinatedCompleteByVaccinationDate": int,
+
+    'vaccinationsAgeDemographics': list,
 }
 
 
