@@ -298,7 +298,7 @@ def to_json(data) -> Union[dict, list]:
 def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     json_columns = json_dtypes.intersection(column_types)
 
-    df = df.replace('null', None)
+    df = df.where(df != 'null', None)
     df.loc[:, json_columns] = (
         df
         .loc[:, json_columns]
