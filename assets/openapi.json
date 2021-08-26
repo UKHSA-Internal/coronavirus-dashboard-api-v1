@@ -1,0 +1,267 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Dashboard API",
+    "version": "v1",
+    "description": "API providing batch downloads, powers the downloads page",
+    "contact": {
+      "email": "coronavirus-tracker@phe.gov.uk",
+      "url": "https://coronavirus.data.gov.uk/",
+      "name": "UK Coronavirus Dashboard"
+    },
+    "license": {
+      "name": "Open Government Licence v3.0.",
+      "url": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.coronavirus.data.gov.uk/v1"
+    }
+  ],
+  "paths": {
+    "/data": {
+      "get": {
+        "summary": "Data",
+        "operationId": "data-get",
+        "description": "Provides data related to the COVID-19 in the United Kingdom based on query parameters. The number of records produced per request is limited to 1000. The pagination feature may be activated to obtain additional records.",
+        "parameters": [
+          {
+            "name": "filters",
+            "in": "query",
+            "description": "Filter response by one of the filtering parameters. Use semicolon for conjunctive and vertical bar for disjunctive conditions.",
+            "schema": {
+              "type": "string"
+            },
+            "examples": {
+              "filter by area type": {
+                "value": "areaType=nation"
+              },
+              "filter by area type and area name": {
+                "value": "areaType=nation;areaName=england"
+              },
+              "filter by area type, area code": {
+                "value": "areaType=nation;areaCode=E92000001"
+              },
+              "filter by area type, date (YYYY-MM-DD)": {
+                "value": "areaType=nation;date=2021-08-20"
+              }
+            }
+          },
+          {
+            "name": "structure",
+            "in": "query",
+            "description": "Define the parameters and structure you would like to receive in response.",
+            "schema": {
+              "type": "string",
+              "properties": {
+                "structure": {
+                  "type": "object"
+                }
+              },
+              "example": "{\"areaName\":\"areaName\",\"newAdmissions\":\"newAdmissions\",\"date\":\"date\"}"
+            }
+          },
+          {
+            "name": "latestBy",
+            "in": "query",
+            "description": "Define a date parameter to filter the time series and boil it down to one response item."
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "Receive the response in JSON (default), CSV, or XML."
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number - usage of this query parameter activates the pagination feature."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful: The response body contains the data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/data"
+                },
+                "examples": {
+                  "Example response": {
+                    "value": "{\n  \"length\": 4,\n  \"maxPageLimit\": 2500,\n  \"totalRecords\": 4,\n  \"data\": [\n    {\n      \"areaName\": \"England\",\n      \"newAdmissions\": 733,\n      \"date\": \"2021-08-20\"\n    },\n    {\n      \"areaName\": \"Northern Ireland\",\n      \"newAdmissions\": 44,\n      \"date\": \"2021-08-20\"\n    },\n    {\n      \"areaName\": \"Scotland\",\n      \"newAdmissions\": 56,\n      \"date\": \"2021-08-20\"\n    },\n    {\n      \"areaName\": \"Wales\",\n      \"newAdmissions\": 26,\n      \"date\": \"2021-08-20\"\n    }\n  ],\n  \"requestPayload\": {\n    \"structure\": {\n      \"areaName\": \"areaName\",\n      \"newAdmissions\": \"newAdmissions\",\n      \"date\": \"date\"\n    },\n    \"filters\": [\n      {\n        \"identifier\": \"areaType\",\n        \"operator\": \"=\",\n        \"value\": \"nation\"\n      },\n      {\n        \"identifier\": \"date\",\n        \"operator\": \"=\",\n        \"value\": \"2021-08-20\"\n      }\n    ],\n    \"page\": 1\n  },\n  \"pagination\": {\n    \"current\": \"/v1/data?filters=areaType=nation;date=2021-08-20&structure={\\\"areaName\\\":\\\"areaName\\\",\\\"newAdmissions\\\":\\\"newAdmissions\\\",\\\"date\\\":\\\"date\\\"}&format=json&page=1\",\n    \"next\": null,\n    \"previous\": null,\n    \"first\": \"/v1/data?filters=areaType=nation;date=2021-08-20&structure={\\\"areaName\\\":\\\"areaName\\\",\\\"newAdmissions\\\":\\\"newAdmissions\\\",\\\"date\\\":\\\"date\\\"}&format=json&page=1\",\n    \"last\": \"/v1/data?filters=areaType=nation;date=2021-08-20&structure={\\\"areaName\\\":\\\"areaName\\\",\\\"newAdmissions\\\":\\\"newAdmissions\\\",\\\"date\\\":\\\"date\\\"}&format=json&page=1\"\n  }\n}"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Successful: The request was successfully processed, but but were no records matching the requested criteria."
+          },
+          "400": {
+            "description": "Resource not found: Incorrect URL or method"
+          },
+          "401": {
+            "description": "Unauthorised request: You are not authorised to view the data"
+          },
+          "404": {
+            "description": "Not found: Invalid parameter"
+          },
+          "412": {
+            "description": "Precondition failed: Invalid query parameter (not structured correctly)"
+          },
+          "413": {
+            "description": "Entity too large: Exceeding the maximum number of parameters, either in filters or in structure."
+          },
+          "417": {
+            "description": "Expectation failed: Either the structure if not a correctly formatted JSON, or the value assigned to a filter parameter is not the correct type."
+          },
+          "422": {
+            "description": "Unprocessable entity: Invalid filter parameter"
+          },
+          "429": {
+            "description": "Too many requests: Throttling has been activated"
+          },
+          "500": {
+            "description": "Server error: Either an internal server error has occurred, or processing the request has taken longer that permitted."
+          }
+        }
+      }
+    },
+    "/code": {
+      "get": {
+        "summary": "Code",
+        "operationId": "code",
+        "responses": {
+          "200": {
+            "description": "null"
+          }
+        }
+      }
+    },
+    "/lookup": {
+      "get": {
+        "summary": "Lookup",
+        "operationId": "lookup",
+        "responses": {
+          "200": {
+            "description": "null"
+          }
+        }
+      }
+    },
+    "/soa": {
+      "get": {
+        "summary": "Super Output Areas",
+        "operationId": "super-output-areas",
+        "responses": {
+          "200": {
+            "description": "null"
+          }
+        }
+      }
+    },
+    "/timestamp": {
+      "get": {
+        "summary": "Website timestamp",
+        "operationId": "website-timestamp",
+        "responses": {
+          "200": {
+            "description": "null"
+          }
+        }
+      }
+    },
+    "/healthcheck": {
+      "get": {
+        "summary": "Healthcheck",
+        "operationId": "healthcheck-get",
+        "responses": {
+          "200": {
+            "description": "Healthcheck successful",
+            "content": {
+              "text/plain; charset=utf-8": {
+                "example": "ALIVE"
+              }
+            }
+          },
+          "500": {
+            "description": "Healthcheck failed"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "data": {
+        "type": "object",
+        "properties": {
+          "length": {
+            "type": "integer"
+          },
+          "maxPageLimit": {
+            "type": "integer"
+          },
+          "totalRecords": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "requestPayload": {
+            "type": "object",
+            "properties": {
+              "structure": {
+                "type": "object"
+              },
+              "filters": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "identifier": {
+                      "type": "string"
+                    },
+                    "operator": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "identifier",
+                    "operator",
+                    "value"
+                  ]
+                }
+              },
+              "page": {
+                "type": "integer"
+              }
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "current": {
+                "type": "string"
+              },
+              "next": {},
+              "previous": {},
+              "first": {
+                "type": "string"
+              },
+              "last": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
