@@ -65,17 +65,32 @@
           {
             "name": "latestBy",
             "in": "query",
-            "description": "Define a date parameter to filter the time series and boil it down to one response item."
+            "description": "Define a date parameter to filter the time series and boil it down to one response item. (YYYY-MM-DD)",
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "format",
             "in": "query",
-            "description": "Receive the response in JSON (default), CSV, or XML."
+            "description": "Receive the response in JSON (default), CSV, or XML.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "csv",
+                "xml"
+              ],
+              "default": "json"
+            }
           },
           {
             "name": "page",
             "in": "query",
-            "description": "Page number - usage of this query parameter activates the pagination feature."
+            "description": "Page number - usage of this query parameter activates the pagination feature.",
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -87,7 +102,7 @@
                   "$ref": "#/components/schemas/data"
                 },
                 "examples": {
-                  "Example response": {
+                  "example response of nation admissions": {
                     "value": "{\n  \"length\": 4,\n  \"maxPageLimit\": 2500,\n  \"totalRecords\": 4,\n  \"data\": [\n    {\n      \"areaName\": \"England\",\n      \"newAdmissions\": 733,\n      \"date\": \"2021-08-20\"\n    },\n    {\n      \"areaName\": \"Northern Ireland\",\n      \"newAdmissions\": 44,\n      \"date\": \"2021-08-20\"\n    },\n    {\n      \"areaName\": \"Scotland\",\n      \"newAdmissions\": 56,\n      \"date\": \"2021-08-20\"\n    },\n    {\n      \"areaName\": \"Wales\",\n      \"newAdmissions\": 26,\n      \"date\": \"2021-08-20\"\n    }\n  ],\n  \"requestPayload\": {\n    \"structure\": {\n      \"areaName\": \"areaName\",\n      \"newAdmissions\": \"newAdmissions\",\n      \"date\": \"date\"\n    },\n    \"filters\": [\n      {\n        \"identifier\": \"areaType\",\n        \"operator\": \"=\",\n        \"value\": \"nation\"\n      },\n      {\n        \"identifier\": \"date\",\n        \"operator\": \"=\",\n        \"value\": \"2021-08-20\"\n      }\n    ],\n    \"page\": 1\n  },\n  \"pagination\": {\n    \"current\": \"/v1/data?filters=areaType=nation;date=2021-08-20&structure={\\\"areaName\\\":\\\"areaName\\\",\\\"newAdmissions\\\":\\\"newAdmissions\\\",\\\"date\\\":\\\"date\\\"}&format=json&page=1\",\n    \"next\": null,\n    \"previous\": null,\n    \"first\": \"/v1/data?filters=areaType=nation;date=2021-08-20&structure={\\\"areaName\\\":\\\"areaName\\\",\\\"newAdmissions\\\":\\\"newAdmissions\\\",\\\"date\\\":\\\"date\\\"}&format=json&page=1\",\n    \"last\": \"/v1/data?filters=areaType=nation;date=2021-08-20&structure={\\\"areaName\\\":\\\"areaName\\\",\\\"newAdmissions\\\":\\\"newAdmissions\\\",\\\"date\\\":\\\"date\\\"}&format=json&page=1\"\n  }\n}"
                   }
                 }
@@ -130,32 +145,50 @@
     "/code": {
       "get": {
         "summary": "Code",
+        "description": "Return the related area names and codes based on given category and search parameters.",
         "operationId": "code",
-        "responses": {
-          "200": {
-            "description": "null"
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Search by code category.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "postcode",
+                "lsoa",
+                "msoa",
+                "ltla",
+                "utla",
+                "region",
+                "nation"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "String to search for in given category.",
+            "schema": {
+              "type": "string"
+            }
           }
-        }
-      }
-    },
-    "/lookup": {
-      "get": {
-        "summary": "Lookup",
-        "operationId": "lookup",
+        ],
         "responses": {
           "200": {
-            "description": "null"
-          }
-        }
-      }
-    },
-    "/soa": {
-      "get": {
-        "summary": "Super Output Areas",
-        "operationId": "super-output-areas",
-        "responses": {
-          "200": {
-            "description": "null"
+            "description": "Returns area names and codes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/code"
+                },
+                "examples": {
+                  "example response from postcode": {
+                    "value": "{\"postcode\":\"TN39 3HL\",\"trimmedPostcode\":\"TN393HL\",\"geometry\":{\"type\":\"Point\",\"coordinates\":[0.464286,50.83694]},\"lsoa\":\"E01021091\",\"lsoaName\":\"Rother 011B\",\"msoa\":\"E02004402\",\"msoaName\":\"Bexhill Central\",\"nhsTrust\":\"RXC\",\"nhsTrustName\":\"East Sussex Healthcare NHS Trust\",\"ltla\":\"E07000064\",\"ltlaName\":\"Rother\",\"utla\":\"E10000011\",\"utlaName\":\"East Sussex\",\"region\":\"E12000008\",\"regionName\":\"South East\",\"nhsRegion\":\"E40000005\",\"nhsRegionName\":\"South East\",\"nation\":\"E92000001\",\"nationName\":\"England\"}"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -164,9 +197,22 @@
       "get": {
         "summary": "Website timestamp",
         "operationId": "website-timestamp",
+        "description": "Returns the website timestamp of last release (UTC)",
         "responses": {
           "200": {
-            "description": "null"
+            "description": "Returns timestamp (UTC)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/timestamp"
+                },
+                "examples": {
+                  "example response": {
+                    "value": "{\n  \"websiteTimestamp\": \"2021-08-30T15:00:05.561913Z\"\n}"
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -259,6 +305,87 @@
                 "type": "string"
               }
             }
+          }
+        }
+      },
+      "timestamp": {
+        "type": "object",
+        "properties": {
+          "websiteTimestamp": {
+            "type": "string"
+          }
+        }
+      },
+      "code": {
+        "type": "object",
+        "properties": {
+          "postcode": {
+            "type": "string"
+          },
+          "trimmedPostcode": {
+            "type": "string"
+          },
+          "geometry": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "lsoa": {
+            "type": "string"
+          },
+          "lsoaName": {
+            "type": "string"
+          },
+          "msoa": {
+            "type": "string"
+          },
+          "msoaName": {
+            "type": "string"
+          },
+          "nhsTrust": {
+            "type": "string"
+          },
+          "nhsTrustName": {
+            "type": "string"
+          },
+          "ltla": {
+            "type": "string"
+          },
+          "ltlaName": {
+            "type": "string"
+          },
+          "utla": {
+            "type": "string"
+          },
+          "utlaName": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "regionName": {
+            "type": "string"
+          },
+          "nhsRegion": {
+            "type": "string"
+          },
+          "nhsRegionName": {
+            "type": "string"
+          },
+          "nation": {
+            "type": "string"
+          },
+          "nationName": {
+            "type": "string"
           }
         }
       }
