@@ -37,19 +37,5 @@ class Connection:
 
 async def probe(req: HttpRequest) -> HttpResponse:
     logging.info("Processing healthcheck request")
-    try:
-        async with Connection() as conn:
-            result = await conn.fetchrow("SELECT 1 AS healthcheck")
-        # result = db_client.query(QUERY, params=list()).pop()
+    return HttpResponse("ALIVE", status_code=HTTPStatus.OK.real)
 
-        if result.get("healthcheck", None) is not None:
-            if req.method == "GET":
-                return HttpResponse("ALIVE", status_code=HTTPStatus.OK.real)
-
-            return HttpResponse(None, status_code=HTTPStatus.NO_CONTENT.real)
-
-        raise RuntimeError("Heath probe DB response was empty.")
-
-    except Exception as err:
-        logging.exception(err)
-        raise err
