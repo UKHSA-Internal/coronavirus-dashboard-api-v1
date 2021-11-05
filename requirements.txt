@@ -17,5 +17,5 @@ redis==3.5.3
 azure-cosmos==4.2.0
 PyYAML
 pytz==2021.1
-asyncpg==0.22.0
+asyncpg
 orjson
