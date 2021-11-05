@@ -217,7 +217,7 @@ WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
   $filters
-ORDER BY area_code, date DESC
+ORDER BY area_id, date DESC
 LIMIT $limit OFFSET $offset
 """)
 
@@ -488,6 +488,11 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "newPeopleVaccinatedBoosterDoseByPublishDate": int,
     "cumVaccinationThirdInjectionUptakeByPublishDatePercentage": float,
     "cumPeopleVaccinatedBoosterDoseByPublishDate": int,
+
+    "cumPCRTestsBySpecimenDate": int,
+    "newPCRTestsBySpecimenDate": int,
+    "newVirusTestsBySpecimenDate": int,
+    "cumVirusTestsBySpecimenDate": int,
 }
 
 
@@ -781,4 +786,9 @@ if ENVIRONMENT == "DEVELOPMENT":
         "newPeopleVaccinatedBoosterDoseByPublishDate": int,
         "cumVaccinationThirdInjectionUptakeByPublishDatePercentage": float,
         "cumPeopleVaccinatedBoosterDoseByPublishDate": int,
+
+        "cumPCRTestsBySpecimenDate": int,
+        "newPCRTestsBySpecimenDate": int,
+        "newVirusTestsBySpecimenDate": int,
+        "cumVirusTestsBySpecimenDate": int,
     }
