@@ -217,7 +217,7 @@ WHERE
       metric = ANY($$1::VARCHAR[])
   AND rr.released IS TRUE
   $filters
-ORDER BY area_code, date DESC
+ORDER BY area_id, date DESC
 LIMIT $limit OFFSET $offset
 """)
 
@@ -382,10 +382,10 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "transmissionRateGrowthRateMin": float,
     "transmissionRateGrowthRateMax": float,
 
-    'newLFDTests': int,
-    'cumLFDTests': int,
-    'newVirusTests': int,
-    'cumVirusTests': int,
+    'newLFDTestsBySpecimenDate': int,
+    'cumLFDTestsBySpecimenDate': int,
+    'newVirusTestsByPublishDate': int,
+    'cumVirusTestsByPublishDate': int,
 
     'newCasesBySpecimenDateDirection': str,
     'newCasesBySpecimenDateChange': int,
@@ -488,6 +488,11 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     "newPeopleVaccinatedBoosterDoseByPublishDate": int,
     "cumVaccinationThirdInjectionUptakeByPublishDatePercentage": float,
     "cumPeopleVaccinatedBoosterDoseByPublishDate": int,
+
+    "cumPCRTestsBySpecimenDate": int,
+    "newPCRTestsBySpecimenDate": int,
+    "newVirusTestsBySpecimenDate": int,
+    "cumVirusTestsBySpecimenDate": int,
 }
 
 
@@ -665,10 +670,10 @@ if ENVIRONMENT == "DEVELOPMENT":
         "newDeaths28DaysByDeathDateRollingSum": int,
         "newDeaths60DaysByDeathDateRollingSum": int,
 
-        'newLFDTests': int,
-        'cumLFDTests': int,
-        'newVirusTests': int,
-        'cumVirusTests': int,
+        'newLFDTestsBySpecimenDate': int,
+        'cumLFDTestsBySpecimenDate': int,
+        'newVirusTestsByPublishDate': int,
+        'cumVirusTestsByPublishDate': int,
 
         "alertLevel": int,
         "transmissionRateMin": float,
@@ -781,4 +786,9 @@ if ENVIRONMENT == "DEVELOPMENT":
         "newPeopleVaccinatedBoosterDoseByPublishDate": int,
         "cumVaccinationThirdInjectionUptakeByPublishDatePercentage": float,
         "cumPeopleVaccinatedBoosterDoseByPublishDate": int,
+
+        "cumPCRTestsBySpecimenDate": int,
+        "newPCRTestsBySpecimenDate": int,
+        "newVirusTestsBySpecimenDate": int,
+        "cumVirusTestsBySpecimenDate": int,
     }
