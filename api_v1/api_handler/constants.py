@@ -497,6 +497,23 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     'cumVaccinationThirdInjectionUptakeByVaccinationDatePercentage': float,
     'newPeopleVaccinatedThirdInjectionByVaccinationDate': int,
     'cumPeopleVaccinatedThirdInjectionByVaccinationDate': int,
+
+    'cumFirstEpisodesBySpecimenDate': int,
+    'cumFirstEpisodesBySpecimenDateRate': float,
+    'cumReinfectionsBySpecimenDate': int,
+    'cumReinfectionsBySpecimenDateRate': float,
+    'newFirstEpisodesBySpecimenDate': int,
+    'newFirstEpisodesBySpecimenDateChange': int,
+    'newFirstEpisodesBySpecimenDateChangePercentage': float,
+    'newFirstEpisodesBySpecimenDateDirection': str,
+    'newFirstEpisodesBySpecimenDateRollingRate': float,
+    'newFirstEpisodesBySpecimenDateRollingSum': int,
+    'newReinfectionsBySpecimenDate': int,
+    'newReinfectionsBySpecimenDateChange': int,
+    'newReinfectionsBySpecimenDateChangePercentage': float,
+    'newReinfectionsBySpecimenDateDirection': str,
+    'newReinfectionsBySpecimenDateRollingRate': float,
+    'newReinfectionsBySpecimenDateRollingSum': int,
 }
 
 
@@ -799,4 +816,22 @@ if ENVIRONMENT == "DEVELOPMENT":
         'cumVaccinationThirdInjectionUptakeByVaccinationDatePercentage': float,
         'newPeopleVaccinatedThirdInjectionByVaccinationDate': int,
         'cumPeopleVaccinatedThirdInjectionByVaccinationDate': int,
+
+        'cumFirstEpisodesBySpecimenDate': int,
+        'cumFirstEpisodesBySpecimenDateRate': float,
+        'cumReinfectionsBySpecimenDate': int,
+        'cumReinfectionsBySpecimenDateRate': float,
+        'newFirstEpisodesBySpecimenDate': int,
+        'newFirstEpisodesBySpecimenDateChange': int,
+        'newFirstEpisodesBySpecimenDateChangePercentage': float,
+        'newFirstEpisodesBySpecimenDateDirection': str,
+        'newFirstEpisodesBySpecimenDateRollingRate': float,
+        'newFirstEpisodesBySpecimenDateRollingSum': int,
+        'newReinfectionsBySpecimenDate': int,
+        'newReinfectionsBySpecimenDateChange': int,
+        'newReinfectionsBySpecimenDateChangePercentage': float,
+        'newReinfectionsBySpecimenDateDirection': str,
+        'newReinfectionsBySpecimenDateRollingRate': float,
+        'newReinfectionsBySpecimenDateRollingSum': int,
+
     }
