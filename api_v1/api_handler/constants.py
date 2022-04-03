@@ -51,7 +51,6 @@ __all__ = [
     'REPORT_DATE_PARAM_NAME',
     'RESPONSE_TYPE',
     'DATE_PARAM_NAME',
-    "DatabaseCredentials",
     "RESTRICTED_PARAMETER_VALUES",
     "PAGINATION_PATTERN",
     "MAX_ITEMS_PER_RESPONSE",
@@ -133,13 +132,6 @@ DEFAULT_LATEST_ORDERING: OrderingType = [
 
 
 PAGINATION_PATTERN: Pattern = re_compile(r'(page=(\d{,3}))')
-
-
-class DatabaseCredentials(NamedTuple):
-    host = getenv('AzureCosmosHost')
-    key = getenv('AzureCosmosKey')
-    db_name = getenv('AzureCosmosDBName')
-    data_collection = getenv('AzureCosmosCollection')
 
 
 if ENVIRONMENT == "DEVELOPMENT":

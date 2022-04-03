@@ -17,7 +17,6 @@ import asyncpg
 
 from orjson import dumps, loads, JSONDecodeError
 
-from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
 
 from pandas import DataFrame
@@ -26,7 +25,7 @@ from numpy import ceil
 
 # Internal:
 from .constants import (
-    DBQueries, DatabaseCredentials, PAGINATION_PATTERN,
+    DBQueries, PAGINATION_PATTERN,
     MAX_ITEMS_PER_RESPONSE, DATA_TYPES
 )
 from .queries import QueryParser
@@ -45,7 +44,6 @@ __all__ = [
 ]
 
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
-PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",") or None
 
 base_metrics = ["areaCode", "areaType", "areaName", "date"]
 single_partition_types = {"utla", "ltla", "nhstrust", "msoa"}
@@ -71,52 +69,10 @@ json_dtypes = {type_ for type_, base_type in dtypes.items() if base_type in [lis
 logger = logging.getLogger('azure')
 logger.setLevel(logging.WARNING)
 
-# DB_KWS = dict(
-#     url=DatabaseCredentials.host,
-#     credential={'masterKey': DatabaseCredentials.key},
-#     preferred_locations=PREFERRED_LOCATIONS,
-#     connection_timeout=10000
-# )
-#
-# client = CosmosClient(**DB_KWS)
-# db = client.get_database_client(DatabaseCredentials.db_name)
-# container = db.get_container_client(DatabaseCredentials.data_collection)
-
 
 def json_formatter(obj):
     if isinstance(date, (date, datetime)):
         return obj.isoformat()
-
-
-def log_response(query, arguments):
-    """
-    Closure for logging DB query information.
-
-    Main function receives the ``query`` and its ``arguments`` and returns
-    a function that may be passed to the ``cosmos_client.query_items``
-    as the ``response_hook`` keyword argument.
-    """
-    count = 0
-
-    def process(metadata, results):
-        nonlocal count, query
-
-        for item in arguments:
-            query = query.replace(item['name'], item['value'])
-
-        custom_dims = dict(
-            charge=metadata.get('x-ms-request-charge', None),
-            query=query,
-            query_raw=query,
-            response_count=metadata.get('x-ms-item-count', None),
-            path=metadata.get('x-ms-alt-content-path', None),
-            parameters=arguments,
-            request_round=count
-        )
-
-        logging.info(f"DB QUERY: { dumps(custom_dims) }")
-
-    return process
 
 
 class Connection:
