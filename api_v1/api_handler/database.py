@@ -8,9 +8,9 @@ import logging
 from os import getenv
 from urllib.parse import urlparse, unquote_plus
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Awaitable, Union, Iterable, Any, Dict
 from datetime import datetime, date
+from math import ceil
 
 # 3rd party:
 import asyncpg
@@ -20,8 +20,6 @@ from orjson import dumps, loads, JSONDecodeError
 from azure.functions import HttpRequest
 
 from pandas import DataFrame
-
-from numpy import ceil
 
 # Internal:
 from .constants import (
@@ -170,7 +168,7 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
     if response_type == 'csv':
         return df.to_csv(float_format="%.20g", index=False).encode()
 
-    total_pages = int(ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics)))
+    total_pages = ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics))
     prepped_url = PAGINATION_PATTERN.sub("", request.url)
     parsed_url = urlparse(prepped_url)
     url = unquote_plus(f"/v1/data?{parsed_url.query}".strip("&"))
@@ -206,7 +204,6 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
     return dumps(payload, default=json_formatter)
 
 
-@lru_cache(32)
 def get_partition_id(area_type: str, timestamp: str) -> str:
     ts = datetime.fromisoformat(timestamp[:26])
 
