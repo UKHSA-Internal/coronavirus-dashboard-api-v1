@@ -49,7 +49,7 @@ async def format_structure(struct: str) -> StructureType:
     Parameters
     ----------
     struct: str
-        Structure the be used in the response.
+        Structure to be used in the response.
 
     Raises
     ------

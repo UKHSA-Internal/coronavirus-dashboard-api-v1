@@ -8,25 +8,22 @@ import logging
 from os import getenv
 from urllib.parse import urlparse, unquote_plus
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Awaitable, Union, Iterable, Any, Dict
 from datetime import datetime, date
+from math import ceil
 
 # 3rd party:
 import asyncpg
 
 from orjson import dumps, loads, JSONDecodeError
 
-from azure.cosmos.cosmos_client import CosmosClient
 from azure.functions import HttpRequest
 
 from pandas import DataFrame
 
-from numpy import ceil
-
 # Internal:
 from .constants import (
-    DBQueries, DatabaseCredentials, PAGINATION_PATTERN,
+    DBQueries, PAGINATION_PATTERN,
     MAX_ITEMS_PER_RESPONSE, DATA_TYPES
 )
 from .queries import QueryParser
@@ -45,7 +42,6 @@ __all__ = [
 ]
 
 ENVIRONMENT = getenv("API_ENV", "PRODUCTION")
-PREFERRED_LOCATIONS = getenv("AzureCosmosDBLocations", "").split(",") or None
 
 base_metrics = ["areaCode", "areaType", "areaName", "date"]
 single_partition_types = {"utla", "ltla", "nhstrust", "msoa"}
@@ -71,52 +67,10 @@ json_dtypes = {type_ for type_, base_type in dtypes.items() if base_type in [lis
 logger = logging.getLogger('azure')
 logger.setLevel(logging.WARNING)
 
-# DB_KWS = dict(
-#     url=DatabaseCredentials.host,
-#     credential={'masterKey': DatabaseCredentials.key},
-#     preferred_locations=PREFERRED_LOCATIONS,
-#     connection_timeout=10000
-# )
-#
-# client = CosmosClient(**DB_KWS)
-# db = client.get_database_client(DatabaseCredentials.db_name)
-# container = db.get_container_client(DatabaseCredentials.data_collection)
-
 
 def json_formatter(obj):
     if isinstance(date, (date, datetime)):
         return obj.isoformat()
-
-
-def log_response(query, arguments):
-    """
-    Closure for logging DB query information.
-
-    Main function receives the ``query`` and its ``arguments`` and returns
-    a function that may be passed to the ``cosmos_client.query_items``
-    as the ``response_hook`` keyword argument.
-    """
-    count = 0
-
-    def process(metadata, results):
-        nonlocal count, query
-
-        for item in arguments:
-            query = query.replace(item['name'], item['value'])
-
-        custom_dims = dict(
-            charge=metadata.get('x-ms-request-charge', None),
-            query=query,
-            query_raw=query,
-            response_count=metadata.get('x-ms-item-count', None),
-            path=metadata.get('x-ms-alt-content-path', None),
-            parameters=arguments,
-            request_round=count
-        )
-
-        logging.info(f"DB QUERY: { dumps(custom_dims) }")
-
-    return process
 
 
 class Connection:
@@ -214,7 +168,7 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
     if response_type == 'csv':
         return df.to_csv(float_format="%.20g", index=False).encode()
 
-    total_pages = int(ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics)))
+    total_pages = ceil(count / (MAX_ITEMS_PER_RESPONSE * n_metrics))
     prepped_url = PAGINATION_PATTERN.sub("", request.url)
     parsed_url = urlparse(prepped_url)
     url = unquote_plus(f"/v1/data?{parsed_url.query}".strip("&"))
@@ -250,7 +204,6 @@ def format_response(df: DataFrame, request: HttpRequest, response_type: str,
     return dumps(payload, default=json_formatter)
 
 
-@lru_cache(32)
 def get_partition_id(area_type: str, timestamp: str) -> str:
     ts = datetime.fromisoformat(timestamp[:26])
 
