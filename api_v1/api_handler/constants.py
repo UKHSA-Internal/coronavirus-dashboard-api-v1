@@ -513,6 +513,26 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
 
     "newFirstEpisodesBySpecimenDateAgeDemographics": list,
     "newReinfectionsBySpecimenDateAgeDemographics": list,
+
+    "newCasesPillarOneBySpecimenDate": int,
+    'newCasesPillarOneBySpecimenDateDirection': str,
+    'newCasesPillarOneBySpecimenDateChange': int,
+    'newCasesPillarOneBySpecimenDateChangePercentage': float,
+    'newCasesPillarOneBySpecimenDateRollingSum': int,
+    'newCasesPillarOneBySpecimenDateRollingRate': float,
+
+    "cumCasesPillarOneBySpecimenDate": int,
+    "cumCasesPillarOneBySpecimenDateRate": float,
+
+    "newCasesPillarTwoBySpecimenDate": int,
+    'newCasesPillarTwoBySpecimenDateDirection': str,
+    'newCasesPillarTwoBySpecimenDateChange': int,
+    'newCasesPillarTwoBySpecimenDateChangePercentage': float,
+    'newCasesPillarTwoBySpecimenDateRollingSum': int,
+    'newCasesPillarTwoBySpecimenDateRollingRate': float,
+
+    "cumCasesPillarTwoBySpecimenDate": int,
+    "cumCasesPillarTwoBySpecimenDateRate": float,
 }
 
 
@@ -839,4 +859,24 @@ if ENVIRONMENT == "DEVELOPMENT":
 
         "newFirstEpisodesBySpecimenDateAgeDemographics": list,
         "newReinfectionsBySpecimenDateAgeDemographics": list,
+
+        "newCasesPillarOneBySpecimenDate": int,
+        'newCasesPillarOneBySpecimenDateDirection': str,
+        'newCasesPillarOneBySpecimenDateChange': int,
+        'newCasesPillarOneBySpecimenDateChangePercentage': float,
+        'newCasesPillarOneBySpecimenDateRollingSum': int,
+        'newCasesPillarOneBySpecimenDateRollingRate': float,
+
+        "cumCasesPillarOneBySpecimenDate": int,
+        "cumCasesPillarOneBySpecimenDateRate": float,
+
+        "newCasesPillarTwoBySpecimenDate": int,
+        'newCasesPillarTwoBySpecimenDateDirection': str,
+        'newCasesPillarTwoBySpecimenDateChange': int,
+        'newCasesPillarTwoBySpecimenDateChangePercentage': float,
+        'newCasesPillarTwoBySpecimenDateRollingSum': int,
+        'newCasesPillarTwoBySpecimenDateRollingRate': float,
+
+        "cumCasesPillarTwoBySpecimenDate": int,
+        "cumCasesPillarTwoBySpecimenDateRate": float,
     }
