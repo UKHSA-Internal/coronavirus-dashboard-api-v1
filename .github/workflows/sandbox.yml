@@ -1,4 +1,4 @@
-name: Deploy APIv1 to Sandbox Environment
+name: Deploy APIv1 to Azure Sandbox Environment
 
 on:
  push:
