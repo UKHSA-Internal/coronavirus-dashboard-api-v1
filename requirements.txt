@@ -1,5 +1,5 @@
 cython==0.29.22
-pandas==1.2.2
+pandas==1.5.1
 requests==2.25.1
 certifi==2020.12.5
 cryptography==3.4.6
