@@ -1,9 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\.github",
-    "\\.github\\workflows"
+    "\\.github\\workflows",
+    "\\api_v1"
   ],
-  "SelectedNode": "\\.github\\workflows\\sandbox.yml",
+  "SelectedNode": "\\host.json",
   "PreviewInSolutionExplorer": false
 }
