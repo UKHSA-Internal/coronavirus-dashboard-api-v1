@@ -63,6 +63,9 @@
     },
     "enableLiveMetrics": true,
     "enableDependencyTracking": true,
+      "dependencyTrackingOptions": {
+      "enableSqlCommandTextInstrumentation": true
+      },
     "enablePerformanceCountersCollection": true,
     "httpAutoCollectionOptions": {
       "enableHttpTriggerExtendedInfoCollection": true,
