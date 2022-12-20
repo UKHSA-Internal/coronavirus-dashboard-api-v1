@@ -1,9 +1,11 @@
 {
   "ExpandedNodes": [
     "",
-    "\\.github\\workflows",
-    "\\api_v1"
+    "\\api_v1",
+    "\\assets",
+    "\\database",
+    "\\storage"
   ],
-  "SelectedNode": "\\host.json",
+  "SelectedNode": "\\requirements.txt",
   "PreviewInSolutionExplorer": false
 }
