@@ -281,6 +281,7 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     'areaNameLower': str,
     'areaCode': str,
     'covidOccupiedMVBeds': int,
+    'covidOccupiedMVBedsWeekly': float,
     'cumAdmissions': int,
     'cumCasesByPublishDate': int,
     'cumPillarFourTestsByPublishDate': int,
@@ -289,7 +290,9 @@ DATA_TYPES: Dict[str, Callable[[str], Any]] = {
     'cumPillarTwoTestsByPublishDate': int,
     'cumTestsByPublishDate': int,
     'hospitalCases': int,
+    'hospitalCasesWeekly': float,
     'newAdmissions': int,
+    'newAdmissionsWeekly': float,
     'newCasesByPublishDate': int,
     'newPillarFourTestsByPublishDate': int,
     'newPillarOneTestsByPublishDate': int,
@@ -773,7 +776,7 @@ if ENVIRONMENT == "DEVELOPMENT":
         "cumPeopleReceivingFirstDose": int,
         "newPeopleReceivingSecondDose": int,
         "cumPeopleReceivingSecondDose": int,
-    
+
         "cumWeeklyNsoDeathsByRegDate": int,
         "cumWeeklyNsoDeathsByRegDateRate": float,
         "newWeeklyNsoDeathsByRegDate": int,
