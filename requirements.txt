@@ -19,4 +19,4 @@ PyYAML
 pytz==2021.1
 asyncpg
 orjson
-protobuf>=3.19.3,==3.*
+protobuf==4.*
