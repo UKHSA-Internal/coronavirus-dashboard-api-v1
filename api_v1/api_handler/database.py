@@ -306,6 +306,23 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
     count = dict()
 
     async with Connection() as conn:
+        # ----- THIS IS ONLY TO INVESTIGATE UAT DB ISSUES -----
+        show_jit = await conn.fetch('show jit;')
+
+        if show_jit and str(show_jit[0]) == "<Record jit='off'>":
+            logger.debug('POSTGRES JIT is currently off')
+        else:
+            logger.debug(f'POSTGRES JIT: {show_jit}')
+
+        # --- setting JIT to OFF
+        is_off = await conn.execute('SET JIT = OFF;')
+
+        if is_off and is_off == 'SET':
+            logger.debug('JIT is set to OFF.')
+        else:
+            logger.debug(f'Setting JIT to OFF returned: {is_off}')
+        # --------------------- END -------------------------
+
         if request.method == RequestMethod.Get:
             if tokens.only_latest_by is None:
                 count = await get_count(
