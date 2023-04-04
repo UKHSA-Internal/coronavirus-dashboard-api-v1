@@ -3,7 +3,7 @@ pandas==1.2.2
 requests==2.25.1
 certifi==2020.12.5
 cryptography==3.4.6
-chardet==4.0.0
+chardet==5.1.0
 idna
 azure-core==1.25.0
 azure-common==1.1.26
