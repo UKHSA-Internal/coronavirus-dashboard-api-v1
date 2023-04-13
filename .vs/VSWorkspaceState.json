@@ -1,11 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api_v1",
-    "\\assets",
-    "\\database",
-    "\\storage"
+    "\\layout_cms"
   ],
-  "SelectedNode": "\\requirements.txt",
+  "SelectedNode": "\\layout_cms\\layout.py",
   "PreviewInSolutionExplorer": false
 }

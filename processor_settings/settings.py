@@ -34,7 +34,7 @@ PROD_ENV = "PRODUCTION"
 ENV_GITHUB_BRANCH_MAP = {
     DEV_ENV: "development",
     STAGING_ENV: "staging",
-    SANDBOX_ENV: "sandbox"
+    SANDBOX_ENV: "sandbox",
     PROD_ENV: "master"
 }
 
