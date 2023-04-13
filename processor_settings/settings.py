@@ -16,7 +16,7 @@ __all__ = [
     "ENV_KEY",
     "DEV_ENV",
     "PROD_ENV",
-    "SANDBOX_ENV"
+    "SANDBOX_ENV",
     "ENVIRONMENT",
     "URL_SEPARATOR",
     "JSON_SEPARATORS",
