@@ -1,8 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\layout_cms"
+    "\\github_utils",
+    "\\layout_cms",
+    "\\processor_settings"
   ],
-  "SelectedNode": "\\layout_cms\\layout.py",
+  "SelectedNode": "\\processor_settings\\settings.py",
   "PreviewInSolutionExplorer": false
 }
