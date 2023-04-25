@@ -1,10 +1,12 @@
 {
   "ExpandedNodes": [
     "",
+    "\\.github",
+    "\\.github\\workflows",
     "\\github_utils",
     "\\layout_cms",
     "\\processor_settings"
   ],
-  "SelectedNode": "\\processor_settings\\settings.py",
+  "SelectedNode": "\\.github\\workflows\\sandbox.yml",
   "PreviewInSolutionExplorer": false
 }
