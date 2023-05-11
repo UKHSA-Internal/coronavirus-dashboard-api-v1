@@ -321,6 +321,10 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
             logger.debug('JIT is set to OFF.')
         else:
             logger.debug(f'Setting JIT to OFF returned: {is_off}')
+
+        # TODO: remove it after the tests are finished
+        query = f"EXPLAIN ANALYZE {query}"
+        logger.debug(f"Modified query: {query}")
         # --------------------- END -------------------------
 
         if request.method == RequestMethod.Get:
