@@ -88,7 +88,7 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
         if "areaType" not in query:
             raise MissingFilter()
 
-        logging.debug(tokens)
+        logging.info(f"tokens: {tokens}")
 
         response = await get_data(
             req,
