@@ -241,7 +241,7 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
             offset=MAX_ITEMS_PER_RESPONSE * n_metrics * (page_number - 1)
         )
 
-    logging.info(query)
+    logging.info(f"get_query: {query}")
     return query
 
 
@@ -310,21 +310,21 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         show_jit = await conn.fetch('show jit;')
 
         if show_jit and str(show_jit[0]) == "<Record jit='off'>":
-            logger.debug('POSTGRES JIT is currently off')
+            logger.info('POSTGRES JIT is currently off')
         else:
-            logger.debug(f'POSTGRES JIT: {show_jit}')
+            logger.info(f'POSTGRES JIT: {show_jit}')
 
         # --- setting JIT to OFF
         is_off = await conn.execute('SET JIT = OFF;')
 
         if is_off and is_off == 'SET':
-            logger.debug('JIT is set to OFF.')
+            logger.info('JIT is set to OFF.')
         else:
-            logger.debug(f'Setting JIT to OFF returned: {is_off}')
+            logger.info(f'Setting JIT to OFF returned: {is_off}')
 
         # TODO: remove it after the tests are finished
         query = f"EXPLAIN ANALYZE {query}"
-        logger.debug(f"Modified query: {query}")
+        logger.info(f"Modified query: {query}")
         # --------------------- END -------------------------
 
         if request.method == RequestMethod.Get:
