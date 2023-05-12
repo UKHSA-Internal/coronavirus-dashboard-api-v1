@@ -241,6 +241,9 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
             offset=MAX_ITEMS_PER_RESPONSE * n_metrics * (page_number - 1)
         )
 
+    # TODO: remove it after the tests are finished (COVP-107)
+    query = f"EXPLAIN ANALYZE {query}"
+
     logging.info(f"get_query: {query}")
     return query
 
@@ -305,27 +308,27 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
 
     count = dict()
 
+    logger.info('Creating POSTGRES conneciont object.')
+
     async with Connection() as conn:
-        # ----- THIS IS ONLY TO INVESTIGATE UAT DB ISSUES -----
-        show_jit = await conn.fetch('show jit;')
+        logger.info('POSTGRES conneciont object created.')
 
-        if show_jit and str(show_jit[0]) == "<Record jit='off'>":
-            logger.info('POSTGRES JIT is currently off')
-        else:
-            logger.info(f'POSTGRES JIT: {show_jit}')
+        # # ----- THIS IS ONLY TO INVESTIGATE UAT DB ISSUES -----
+        # show_jit = await conn.fetch('show jit;')
 
-        # --- setting JIT to OFF
-        is_off = await conn.execute('SET JIT = OFF;')
+        # if show_jit and str(show_jit[0]) == "<Record jit='off'>":
+        #     logger.info('POSTGRES JIT is currently off')
+        # else:
+        #     logger.info(f'POSTGRES JIT: {show_jit}')
 
-        if is_off and is_off == 'SET':
-            logger.info('JIT is set to OFF.')
-        else:
-            logger.info(f'Setting JIT to OFF returned: {is_off}')
+        # # --- setting JIT to OFF
+        # is_off = await conn.execute('SET JIT = OFF;')
 
-        # TODO: remove it after the tests are finished
-        query = f"EXPLAIN ANALYZE {query}"
-        logger.info(f"Modified query: {query}")
-        # --------------------- END -------------------------
+        # if is_off and is_off == 'SET':
+        #     logger.info('JIT is set to OFF.')
+        # else:
+        #     logger.info(f'Setting JIT to OFF returned: {is_off}')
+        # # --------------------- END -------------------------
 
         if request.method == RequestMethod.Get:
             if tokens.only_latest_by is None:
@@ -344,7 +347,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
             values = await conn.fetchrow(query, *db_args)
 
     count = count.get("count", 0)
-    logging.info(query)
+    logging.info(f"SQL query executed: {query}")
 
     if request.method == RequestMethod.Head:
         if values is None or not values.get('exists', False):
