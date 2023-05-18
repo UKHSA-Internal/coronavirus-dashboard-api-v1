@@ -3,6 +3,7 @@
 # Imports
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Python:
+import json
 import logging
 from re import compile as re_compile, IGNORECASE
 from os.path import join as join_path
@@ -86,6 +87,8 @@ async def substitute(raw_data: Awaitable[str],
     -------
     str
     """
+    logging.info("--- modal_processor substitute function")
+
     pattern = re_compile(
         r"{inc:(?P<relative_path>[a-z0-9./_\-]+)\|(?P<category>[a-z0-9_\-]+)}",
         flags=IGNORECASE
@@ -100,7 +103,10 @@ async def substitute(raw_data: Awaitable[str],
         match = pattern.search(data)
 
         if match is None:
+            logging.info("--- substitute function / match is None")
             break
+        else:
+            logging.info(f"--- substitute function / match: {json.dumps(match.groupdict())}")
 
         found = match.group(0)
         relative_path = match.group("relative_path")
@@ -135,6 +141,8 @@ async def process_and_upload_data(path: str, get_file_data: FileFetcherType,
     -------
     NoReturn
     """
+    logging.info("--- process_and_upload_data function started")
+
     upload_path = path.lstrip(REPOSITORY_BASE).strip(processor_settings.URL_SEPARATOR)
     blob_path = str.join(processor_settings.URL_SEPARATOR, [STORAGE_PATH, upload_path])
 
@@ -146,6 +154,7 @@ async def process_and_upload_data(path: str, get_file_data: FileFetcherType,
                        content_type="text/markdown; charset=utf-8") as client:
         async with Lock():
             client.upload(data=data + UPDATE_TIMESTAMP)
+            logging.info(f"--- file was uploaded to {container} container ({blob_path}).")
 
 
 process_and_upload_data: CallbackType = process_and_upload_data
@@ -167,7 +176,7 @@ async def process_modals(req: HttpRequest) -> HttpResponse:
     HttpResponse
         Response to the HTTP request (200 if successful, otherwise 500).
     """
-    logging.info(f"--- Web hook has triggered the function. Starting the process...")
+    logging.info("--- Web hook has triggered the function. Starting the process...")
 
     event_loop = get_event_loop()
 
@@ -181,6 +190,7 @@ async def process_modals(req: HttpRequest) -> HttpResponse:
         )
 
         event_loop.create_task(task)
+        logging.info("--- Task added for modal_processor.")
 
     except Exception as err:
         logging.exception(err)
