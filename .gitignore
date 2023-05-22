@@ -1,4 +1,5 @@
 /venv
+ve/
 
 /api_v1/azure-functions-core-tools
 /api_v1/assets
@@ -13,6 +14,7 @@ local.settings.*
 
 local_run.sh
 
+*.pyc
 *.http
 *.yaml
 *.xml
