@@ -1,6 +1,6 @@
 {
     "version": "2.0",
-    "functionTimeout": "00:01:00",
+    "functionTimeout": "00:10:00",
     "extensionBundle": {
         "id": "Microsoft.Azure.Functions.ExtensionBundle",
         "version": "[1.*, 3.0.0)"
@@ -38,59 +38,63 @@
             }
         }
     },
-    "logging": {
-        "logLevel": {
-            "default": "Information",
-            "Host.Results": "Information",
-            "Function": "Information",
-            "Host.Aggregator": "Trace"
-        },
-        "applicationInsights": {
-            "samplingSettings": {
-                "isEnabled": true,
-                "maxTelemetryItemsPerSecond": 20,
-                "evaluationInterval": "01:00:00",
-                "initialSamplingPercentage": 100.0,
-                "samplingPercentageIncreaseTimeout": "00:00:10",
-                "samplingPercentageDecreaseTimeout": "00:00:10",
-                "minSamplingPercentage": 0.1,
-                "maxSamplingPercentage": 100.0,
-                "movingAverageRatio": 1.0,
-                "excludedTypes": "",
-                "includedTypes": "PageView;Trace;Event;Request;Dependency"
-            }
-        },
-        "enableLiveMetrics": true,
-        "enableDependencyTracking": true,
-        "enablePerformanceCountersCollection": true,
-        "httpAutoCollectionOptions": {
-            "enableHttpTriggerExtendedInfoCollection": true,
-            "enableW3CDistributedTracing": true,
-            "enableResponseHeaderInjection": true
-        },
-        "snapshotConfiguration": {
-            "agentEndpoint": null,
-            "captureSnapshotMemoryWeight": 0.5,
-            "failedRequestLimit": 3,
-            "handleUntrackedExceptions": true,
-            "isEnabled": true,
-            "isEnabledInDeveloperMode": false,
-            "isEnabledWhenProfiling": true,
-            "isExceptionSnappointsEnabled": false,
-            "isLowPrioritySnapshotUploader": true,
-            "maximumCollectionPlanSize": 50,
-            "maximumSnapshotsRequired": 3,
-            "problemCounterResetInterval": "12:00:00",
-            "provideAnonymousTelemetry": true,
-            "reconnectInterval": "00:15:00",
-            "shadowCopyFolder": null,
-            "shareUploaderProcess": true,
-            "snapshotInLowPriorityThread": true,
-            "snapshotsPerDayLimit": 30,
-            "snapshotsPerTenMinutesLimit": 1,
-            "tempFolder": null,
-            "thresholdForSnapshotting": 1,
-            "uploaderProxy": null
-        }
+  "logging": {
+    "fileLoggingMode": "debugOnly",
+    "logLevel": {
+      "default": "Trace",
+      "Host.Results": "Trace",
+      "Function": "Trace",
+      "Host.Aggregator": "Trace"
+    },
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "maxTelemetryItemsPerSecond": 20,
+        "evaluationInterval": "01:00:00",
+        "initialSamplingPercentage": 100.0,
+        "samplingPercentageIncreaseTimeout": "00:00:10",
+        "samplingPercentageDecreaseTimeout": "00:00:10",
+        "minSamplingPercentage": 0.1,
+        "maxSamplingPercentage": 100.0,
+        "movingAverageRatio": 1.0,
+        "excludedTypes": "",
+        "includedTypes": "PageView;Trace;Event;Request;Dependency"
+      }
+    },
+    "enableLiveMetrics": true,
+    "enableDependencyTracking": true,
+      "dependencyTrackingOptions": {
+      "enableSqlCommandTextInstrumentation": true
+      },
+    "enablePerformanceCountersCollection": true,
+    "httpAutoCollectionOptions": {
+      "enableHttpTriggerExtendedInfoCollection": true,
+      "enableW3CDistributedTracing": true,
+      "enableResponseHeaderInjection": true
+    },
+    "snapshotConfiguration": {
+      "agentEndpoint": null,
+      "captureSnapshotMemoryWeight": 0.5,
+      "failedRequestLimit": 3,
+      "handleUntrackedExceptions": true,
+      "isEnabled": true,
+      "isEnabledInDeveloperMode": false,
+      "isEnabledWhenProfiling": true,
+      "isExceptionSnappointsEnabled": false,
+      "isLowPrioritySnapshotUploader": true,
+      "maximumCollectionPlanSize": 50,
+      "maximumSnapshotsRequired": 3,
+      "problemCounterResetInterval": "12:00:00",
+      "provideAnonymousTelemetry": true,
+      "reconnectInterval": "00:15:00",
+      "shadowCopyFolder": null,
+      "shareUploaderProcess": true,
+      "snapshotInLowPriorityThread": true,
+      "snapshotsPerDayLimit": 30,
+      "snapshotsPerTenMinutesLimit": 1,
+      "tempFolder": null,
+      "thresholdForSnapshotting": 1,
+      "uploaderProxy": null
     }
+  }
 }
