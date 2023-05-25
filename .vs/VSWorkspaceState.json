@@ -1,11 +1,12 @@
 {
   "ExpandedNodes": [
     "",
-    "\\api_v1",
-    "\\assets",
-    "\\database",
-    "\\storage"
+    "\\.github",
+    "\\.github\\workflows",
+    "\\github_utils",
+    "\\layout_cms",
+    "\\processor_settings"
   ],
-  "SelectedNode": "\\requirements.txt",
+  "SelectedNode": "\\.github\\workflows\\sandbox.yml",
   "PreviewInSolutionExplorer": false
 }
