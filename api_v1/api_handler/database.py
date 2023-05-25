@@ -244,7 +244,7 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
         )
 
     # TODO: remove it after the tests are finished (COVP-107)
-    query = f"EXPLAIN ANALYZE {query}"
+    # query = f"EXPLAIN ANALYZE {query}"
 
     logging.info(f"get_query: {query}")
     return query
