@@ -77,7 +77,7 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
 
     try:
         tokens = QueryParser(query, lastUpdateTimestamp)
-        formatter = await tokens.formatter
+        formatter = await tokens.formatter()
 
         if page is not None and latest_by is not None:
             raise BadPagination()
