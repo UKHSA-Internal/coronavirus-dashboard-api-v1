@@ -179,7 +179,7 @@ class QueryParser:
         self._token = str()
         self.last_update = last_update
         self.structure: Awaitable[str] = self.extract_structure
-        self.formatter: Awaitable[str] = self.extract_formatter
+        self.formatter: str = self.extract_formatter()
         self.raw_filters: List[dict] = list()
         self.only_latest_by: str = self.extract_latest_filter()
         self.query_data = self.extract_content()
@@ -197,7 +197,7 @@ class QueryParser:
 
         return int(param)
 
-    async def extract_formatter(self) -> str:
+    def extract_formatter(self) -> str:
         found = self.format_as.search(self._query)
 
         if not found:

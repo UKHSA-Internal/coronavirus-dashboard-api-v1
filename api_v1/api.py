@@ -73,11 +73,12 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
     page = req.params.get("page", None)
     latest_by = req.params.get("latestBy", None)
 
+    # Default formatter
     formatter = 'json'
 
     try:
         tokens = QueryParser(query, lastUpdateTimestamp)
-        formatter = await tokens.formatter()
+        formatter = tokens.formatter or formatter
 
         if page is not None and latest_by is not None:
             raise BadPagination()
@@ -93,7 +94,6 @@ async def api_handler(req: HttpRequest, lastUpdateTimestamp: str, seriesDate: st
         response = await get_data(
             req,
             tokens,
-            formatter,
             lastUpdateTimestamp
         )
 

@@ -267,8 +267,7 @@ def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     return df.astype(column_types)
 
 
-async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
-                   timestamp: str) -> QueryResponseType:
+async def get_data(request: HttpRequest, tokens: QueryParser, timestamp: str) -> QueryResponseType:
     query_data: QueryData = tokens.query_data
     arguments = query_data.arguments
     filters = query_data.query
@@ -384,7 +383,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         .pipe(
             format_response,
             request=request,
-            response_type=formatter,
+            response_type=tokens.formatter,
             count=count,
             page_number=page_number,
             n_metrics=n_metrics,
