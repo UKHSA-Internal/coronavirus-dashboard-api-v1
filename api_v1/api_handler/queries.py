@@ -147,7 +147,7 @@ class QueryParser:
 
     filter_pattern = re.compile(r'filters=([^&]+)(&|$)')
 
-    latest_by = re.compile(r'(&?latestBy=([a-z2860]{2,75}))&?', re.I)
+    latest_by = re.compile(r'(&?latestBy=([a-z2356780]{2,75}))&?', re.I)
 
     format_as = re.compile(r'(&?format=(json|csv|xml))&?')
 
