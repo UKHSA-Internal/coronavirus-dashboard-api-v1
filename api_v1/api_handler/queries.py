@@ -147,7 +147,7 @@ class QueryParser:
 
     filter_pattern = re.compile(r'filters=([^&]+)(&|$)')
 
-    latest_by = re.compile(r'(&?latestBy=([a-z2860]{2,75}))&?', re.I)
+    latest_by = re.compile(r'(&?latestBy=([a-z2356780]{2,75}))&?', re.I)
 
     format_as = re.compile(r'(&?format=(json|csv|xml))&?')
 
@@ -178,8 +178,8 @@ class QueryParser:
         self._query = query
         self._token = str()
         self.last_update = last_update
-        self.structure: Awaitable[str] = self.extract_structure()
-        self.formatter: Awaitable[str] = self.extract_formatter()
+        self.structure: Awaitable[str] = self.extract_structure
+        self.formatter: str = self.extract_formatter()
         self.raw_filters: List[dict] = list()
         self.only_latest_by: str = self.extract_latest_filter()
         self.query_data = self.extract_content()
@@ -197,7 +197,7 @@ class QueryParser:
 
         return int(param)
 
-    async def extract_formatter(self) -> str:
+    def extract_formatter(self) -> str:
         found = self.format_as.search(self._query)
 
         if not found:
