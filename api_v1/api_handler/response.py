@@ -109,7 +109,7 @@ def format_response(func: APIHandlerType) -> APIFunctionType:
         if isinstance(response, (list, dict)):
             data = dumps(response, separators=(",", ":"))
 
-        # ToDo: This may be performed in APIM.
+        # TODO: This should be performed in APIM.
         # gzipped_data = data.encode()  # compress(data.encode())
         gzipped_data = compress(data if isinstance(data, bytes) else data.encode())
 

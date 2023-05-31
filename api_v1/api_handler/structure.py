@@ -54,11 +54,11 @@ async def format_structure(struct: str) -> StructureType:
     Raises
     ------
     InvalidStructure
-        When the structure is neither an Array (``list``) nor a JSON (``dict``).
+        When the structure is neither a ``list`` nor a ``dict``.
 
     Returns
     -------
-    str
+    Union[Dict[str, Any], List[str]]
         Formatted response structure ready to be used in the database query.
     """
     struct_json = loads(struct)
@@ -67,7 +67,7 @@ async def format_structure(struct: str) -> StructureType:
             any(isinstance(value, (list, dict)) for value in struct_json.values()):
         raise InvalidStructure()
 
-    pattern = re.compile(r'(?P<db_name>[a-z2860]{2,75})', re.IGNORECASE)
+    pattern = re.compile(r'(?P<db_name>[a-z2356780]{2,75})', re.IGNORECASE)
 
     logging.info(set(struct_json) - metric_names)
 

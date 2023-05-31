@@ -243,9 +243,6 @@ async def get_query(request: HttpRequest, latest_by: Union[str, None], partition
             offset=MAX_ITEMS_PER_RESPONSE * n_metrics * (page_number - 1)
         )
 
-    # TODO: remove it after the tests are finished (COVP-107)
-    # query = f"EXPLAIN ANALYZE {query}"
-
     logging.info(f"get_query: {query}")
     return query
 
@@ -270,12 +267,11 @@ def format_dtypes(df: DataFrame, column_types: Dict[str, object]) -> DataFrame:
     return df.astype(column_types)
 
 
-async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
-                   timestamp: str) -> QueryResponseType:
+async def get_data(request: HttpRequest, tokens: QueryParser, timestamp: str) -> QueryResponseType:
     query_data: QueryData = tokens.query_data
     arguments = query_data.arguments
     filters = query_data.query
-    structure = await tokens.structure
+    structure = await tokens.structure()
     raw_filters = tokens.raw_filters
 
     if isinstance(structure, dict):
@@ -312,47 +308,49 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
 
     logging.info('Creating POSTGRES conneciont object.')
 
-    async with Connection() as conn:
-        logging.info('POSTGRES conneciont object created.')
+    async with asyncpg.create_pool(
+        getenv("POSTGRES_CONNECTION_STRING"),
+        command_timeout=60
+    ) as pool:
+        async with pool.acquire() as conn:
+            # ----- THIS IS ONLY TO INVESTIGATE UAT DB ISSUES -----
+            show_jit = await conn.fetch('show jit;')
 
-        # ----- THIS IS ONLY TO INVESTIGATE UAT DB ISSUES -----
-        show_jit = await conn.fetch('show jit;')
+            if show_jit and str(show_jit[0]) == "<Record jit='off'>":
+                logging.info('POSTGRES JIT is currently off')
+            else:
+                logging.info(f'POSTGRES JIT: {show_jit}')
 
-        if show_jit and str(show_jit[0]) == "<Record jit='off'>":
-            logging.info('POSTGRES JIT is currently off')
-        else:
-            logging.info(f'POSTGRES JIT: {show_jit}')
+            # --- setting JIT to OFF
+            is_off = await conn.execute('SET JIT = OFF;')
 
-        # --- setting JIT to OFF
-        is_off = await conn.execute('SET JIT = OFF;')
+            if is_off and is_off == 'SET':
+                logging.info('JIT is set to OFF.')
+            else:
+                logging.info(f'Setting JIT to OFF returned: {is_off}')
+            # --------------------- END -------------------------
 
-        if is_off and is_off == 'SET':
-            logging.info('JIT is set to OFF.')
-        else:
-            logging.info(f'Setting JIT to OFF returned: {is_off}')
-        # --------------------- END -------------------------
+            if request.method == RequestMethod.Get:
+                if tokens.only_latest_by is None:
+                    count = await get_count(
+                        conn,
+                        db_args,
+                        partition_id=partition_id,
+                        filters=filters
+                    )
 
-        if request.method == RequestMethod.Get:
-            if tokens.only_latest_by is None:
-                count = await get_count(
-                    conn,
-                    db_args,
-                    partition_id=partition_id,
-                    filters=filters
-                )
+                    logging.info(f"count: {count}")
 
-                logging.info(f"count: {count}")
+                    if not count:
+                        raise NotAvailable()
 
-                if not count:
-                    raise NotAvailable()
+                logging.info("Fetching data...")
 
-            logging.info("Fetching data...")
-
-            values = await conn.fetch(query, *db_args)
-            logging.info(f"Data for GET request: {values}")
-        else:
-            values = await conn.fetchrow(query, *db_args)
-            logging.info(f"Data for other than GET requests: {values}")
+                values = await conn.fetch(query, *db_args)
+                logging.info(f"Data for GET request: {values}")
+            else:
+                values = await conn.fetchrow(query, *db_args)
+                logging.info(f"Data for other than GET requests: {values}")
 
     count = count.get("count", 0)
     logging.info(f"SQL query executed: {query}")
@@ -385,7 +383,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, formatter: str,
         .pipe(
             format_response,
             request=request,
-            response_type=formatter,
+            response_type=tokens.formatter,
             count=count,
             page_number=page_number,
             n_metrics=n_metrics,
