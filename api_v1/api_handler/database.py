@@ -73,6 +73,7 @@ def json_formatter(obj):
         return obj.isoformat()
 
 
+#TODO: Remove this class if not needed
 class Connection:
     def __init__(self, conn_str=getenv("POSTGRES_CONNECTION_STRING")):
         self.conn_str = conn_str
@@ -310,6 +311,7 @@ async def get_data(request: HttpRequest, tokens: QueryParser, timestamp: str) ->
 
     async with asyncpg.create_pool(
         getenv("POSTGRES_CONNECTION_STRING"),
+        statement_cache_size=0,
         command_timeout=60
     ) as pool:
         async with pool.acquire() as conn:
